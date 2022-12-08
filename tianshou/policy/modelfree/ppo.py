@@ -96,7 +96,7 @@ class PPOPolicy(A2CPolicy):
         self.distributed = True
         if self.distributed:
             ## INIT DIST ##
-            init_method = "tcp://{}:6657".format('10.10.1.1')
+            init_method = "tcp://{}:6650".format('10.10.1.1')
             print('initizaling distributed')
             distribute.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=3)
 
