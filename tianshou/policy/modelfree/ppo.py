@@ -93,19 +93,19 @@ class PPOPolicy(A2CPolicy):
         self._actor_critic: ActorCritic
         self._distributed = distributed
 
-        self.distributed = True
-        if self.distributed:
-            ## INIT DIST ##
-            init_method = "tcp://{}:6657".format('10.10.1.1')
-            print('initizaling distributed')
-            dist.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=3)
+        # self.distributed = True
+        # if self.distributed:
+        #     ## INIT DIST ##
+        #     init_method = "tcp://{}:6657".format('10.10.1.1')
+        #     print('initizaling distributed')
+        #     dist.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=3)
 
-            self.group_list = []
-            for group in range(0, 4):
-                self.group_list.append(group)
+        #     self.group_list = []
+        #     for group in range(0, 4):
+        #         self.group_list.append(group)
 
-            self.group = dist.new_group(self.group_list)
-            self.group_size = len(self.group_list)
+        #     self.group = dist.new_group(self.group_list)
+        #     self.group_size = len(self.group_list)
 
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
