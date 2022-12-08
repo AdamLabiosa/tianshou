@@ -277,6 +277,22 @@ class BaseTrainer(ABC):
         self.stop_fn_flag = False
         self.iter_num = 0
 
+        if self.distributed:
+            for param_idx, params in enumerate(self.policy.parameters()):
+                # Get weights from the first process
+                if self.rank == 0:
+                    # Get weights from the first process
+                    weights = params.data
+                else:
+                    # Create a tensor of zeros to store the weights
+                    weights = torch.zeros_like(params.data)
+                # Broadcast the weights to all processes
+                dist.broadcast(weights, src=0, group=self.group)
+                # Set the weights of the current process
+                params.data = weights
+                # params = params / self.group_size
+                # dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+
     def __iter__(self):  # type: ignore
         self.reset()
         return self
@@ -417,7 +433,7 @@ class BaseTrainer(ABC):
             # Print out models params for debugging
             # print(self.policy.state_dict())
             for param_idx, params in enumerate(self.policy.parameters()):
-                if param_idx == 5:
+                if param_idx == 0:
                     print(params)
                     exit()
            
