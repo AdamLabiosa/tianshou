@@ -1,3 +1,9 @@
+VERY IMPORTANT NOTE:
+This is a copy (fork) of Tianshou from authors at https://github.com/thu-ml/tianshou.
+It is for a big data course at UW-Madison (744).
+All credit for original code goes to original authors.
+
+
 <div align="center">
   <a href="http://tianshou.readthedocs.io"><img width="300px" height="auto" src="https://github.com/thu-ml/tianshou/raw/master/docs/_static/images/tianshou-logo.png"></a>
 </div>
