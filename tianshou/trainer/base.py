@@ -412,10 +412,12 @@ class BaseTrainer(ABC):
                     # if param_idx == 0:
                     #     print(params.grad)
                 self.policy.optim.step()
-            print('merp')
-            exit()
+            
+            
             # Print out models params for debugging
-            print(self.policy.parameters())
+            for param_idx, params in enumerate(self.policy.parameters()):
+                print(param_idx) 
+            # print(self.policy.parameters())
 
             return self.epoch, epoch_stat, info
         else:
