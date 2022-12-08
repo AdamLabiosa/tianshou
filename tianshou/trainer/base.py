@@ -408,12 +408,13 @@ class BaseTrainer(ABC):
             if self.distributed:
                 model = self.train_collector.policy
                 for params in model.parameters():
-                    print(params.grad)
+                    # print(params.grad)
                     params.grad = params.grad / self.group_size
                     dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
-                    print(params.grad)
-                    exit()
+                    # print(params.grad)
+                    # exit()
                 self.train_collector.policy = model
+                self.train_collector.optim.step()
 
 
             
