@@ -229,7 +229,7 @@ class BaseTrainer(ABC):
 
         if self.distributed:
             ## INIT DIST ##
-            init_method = "tcp://{}:6655".format(self.master_ip)
+            init_method = "tcp://{}:6656".format(self.master_ip)
             print('initizaling distributed')
             dist.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
