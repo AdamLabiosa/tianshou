@@ -415,10 +415,11 @@ class BaseTrainer(ABC):
             
             
             # Print out models params for debugging
-            for param_idx, params in enumerate(self.policy.parameters()):
-                if param_idx == 4:
-                    print(params.grad) 
-                    exit()
+            print(self.policy.state_dict())
+            # for param_idx, params in enumerate(self.policy.parameters()):
+            #     if param_idx == 5:
+            #         print(params.grad) 
+            #         exit()
            
             return self.epoch, epoch_stat, info
         else:
