@@ -100,12 +100,12 @@ class PPOPolicy(A2CPolicy):
         #     print('initizaling distributed')
         #     dist.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=3)
 
-        #     self.group_list = []
-        #     for group in range(0, 4):
-        #         self.group_list.append(group)
+        self.group_list = []
+        for group in range(0, 4):
+            self.group_list.append(group)
 
-        #     self.group = dist.new_group(self.group_list)
-        #     self.group_size = len(self.group_list)
+        self.group = dist.new_group(self.group_list)
+        self.group_size = len(self.group_list)
 
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
