@@ -409,8 +409,8 @@ class BaseTrainer(ABC):
                 for param_idx, params in enumerate(self.policy.parameters()):
                     params.grad = params.grad / self.group_size
                     dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
-                    if param_idx == 0:
-                        print(params.grad)
+                    # if param_idx == 0:
+                    #     print(params.grad)
                 self.policy.optim.step()
 
             # Print out models params for debugging
