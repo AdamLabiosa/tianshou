@@ -415,7 +415,7 @@ class BaseTrainer(ABC):
 
             
             # Print out models params for debugging
-            print(self.train_collector.policy)
+            print(self.train_collector.policy.state_dict())
             exit()
             
             return self.epoch, epoch_stat, info
