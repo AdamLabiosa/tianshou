@@ -416,7 +416,7 @@ class BaseTrainer(ABC):
             
             # Print out models params for debugging
             for param_idx, params in enumerate(self.policy.parameters()):
-                if param_idx == 0:
+                if param_idx == 1:
                     print(params.grad) 
                 exit()
            
