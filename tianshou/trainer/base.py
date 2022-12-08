@@ -406,17 +406,27 @@ class BaseTrainer(ABC):
             )
 
             if self.distributed:
-                # Create list to store parameters
-                params_list = [torch.zeros_like(params) for params in self.policy.parameters()]
-                for param_ind, params in enumerate(self.policy.parameters()):
+                model = self.policy
+                for params in model.parameters():
                     params.grad = params.grad / self.group_size
                     dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
-                    params_list[param_ind] = params.grad
+                self.policy = model
+
+            # if self.distributed:
+            #     # Create list to store parameters
+            #     params_list = [torch.zeros_like(params) for params in self.policy.parameters()]
+            #     for param_ind, params in enumerate(self.policy.parameters()):
+            #         params.grad = params.grad / self.group_size
+            #         dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+            #         params_list[param_ind] = params.grad
                 
-                # set the policy parameters to the average of all nodes
-                for param_ind, params in enumerate(self.policy.parameters()):
-                    self.policy.parameters()[param_ind] = params_list[param_ind]
+            #     # set the policy parameters to the average of all nodes
+            #     for param_ind, params in enumerate(self.policy.parameters()):
+            #         self.policy.parameters()[param_ind] = params_list[param_ind]
             
+            # Print out models params for debugging
+            print(self.policy.state_dict())
+            exit()
             # # Create list of tensors to hold the policy parameters
             # params_list = [torch.zeros_like(params) for params in self.policy.parameters()]
             # if self.rank == 0:
