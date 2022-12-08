@@ -412,7 +412,8 @@ class BaseTrainer(ABC):
                     # if param_idx == 0:
                     #     print(params.grad)
                 self.policy.optim.step()
-
+            print('merp')
+            exit()
             # Print out models params for debugging
             print(self.policy.parameters())
 
