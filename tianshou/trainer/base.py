@@ -231,7 +231,7 @@ class BaseTrainer(ABC):
             ## INIT DIST ##
             init_method = "tcp://{}:6657".format(self.master_ip)
             print('initizaling distributed')
-            dist.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+            # dist.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
             self.group_list = []
             for group in range(0, self.num_nodes):
