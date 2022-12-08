@@ -98,7 +98,7 @@ class PPOPolicy(A2CPolicy):
             ## INIT DIST ##
             init_method = "tcp://{}:6657".format('10.10.1.1')
             print('initizaling distributed')
-            dist.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=1)
+            dist.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=2)
 
             self.group_list = []
             for group in range(0, 4):
