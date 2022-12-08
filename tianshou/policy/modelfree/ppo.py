@@ -171,7 +171,7 @@ class PPOPolicy(A2CPolicy):
                 # if self.distributed:
                 for params in self._actor_critic.parameters():
                     params.grad = params.grad / self.group_size
-                    distribute.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+                    distribute.all_reduce(params.grad, op=distribute.ReduceOp.SUM, group=self.group, async_op=False)
             
                 self.optim.step()
                 clip_losses.append(clip_loss.item())
