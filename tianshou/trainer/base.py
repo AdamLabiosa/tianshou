@@ -406,8 +406,7 @@ class BaseTrainer(ABC):
             )
             
             if self.distributed:
-                model = self.policy
-                for param_idx, params in enumerate(model.parameters()):
+                for param_idx, params in enumerate(self.policy.parameters()):
                     params.grad = params.grad / self.group_size
                     dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
                     if param_idx == 0:
@@ -415,7 +414,7 @@ class BaseTrainer(ABC):
                 self.policy.optim.step()
 
             # Print out models params for debugging
-            for param_idx, params in enumerate(model.parameters()):
+            for param_idx, params in enumerate(self.policy.parameters()):
                 if param_idx == 0:
                     print(params.grad)
                     exit()
