@@ -8,6 +8,11 @@ from tianshou.data import Batch, ReplayBuffer, to_torch_as
 from tianshou.policy import A2CPolicy
 from tianshou.utils.net.common import ActorCritic
 
+# Distriuted imports 
+import torch.distributed as dist
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class PPOPolicy(A2CPolicy):
     r"""Implementation of Proximal Policy Optimization. arXiv:1707.06347.
@@ -88,6 +93,20 @@ class PPOPolicy(A2CPolicy):
         self._actor_critic: ActorCritic
         self._distributed = distributed
 
+        # self.distributed = True
+        # if self.distributed:
+        #     ## INIT DIST ##
+        #     init_method = "tcp://{}:6657".format('10.10.1.1')
+        #     print('initizaling distributed')
+        #     dist.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=0)
+
+        #     self.group_list = []
+        #     for group in range(0, 4):
+        #         self.group_list.append(group)
+
+        #     self.group = dist.new_group(self.group_list)
+        #     self.group_size = len(self.group_list)
+
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
     ) -> Batch:
@@ -150,9 +169,9 @@ class PPOPolicy(A2CPolicy):
                         self._actor_critic.parameters(), max_norm=self._grad_norm
                     )
                 # if self.distributed:
-                #     for params in self.policy.parameters():
-                #         params.grad = params.grad / self.group_size
-                #         dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+                # for params in self._actor_critic.parameters():
+                #     params.grad = params.grad / self.group_size
+                #     dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
             
                 self.optim.step()
                 clip_losses.append(clip_loss.item())
