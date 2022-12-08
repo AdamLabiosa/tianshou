@@ -414,7 +414,7 @@ class BaseTrainer(ABC):
                 self.policy.optim.step()
 
             # Print out models params for debugging
-            print(self.policy.state_dict())
+            print(self.policy.parameters())
 
             return self.epoch, epoch_stat, info
         else:
