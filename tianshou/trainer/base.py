@@ -290,8 +290,6 @@ class BaseTrainer(ABC):
                 dist.broadcast(weights, src=0, group=self.group)
                 # Set the weights of the current process
                 params.data = weights
-                # params = params / self.group_size
-                # dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
 
     def __iter__(self):  # type: ignore
         self.reset()
@@ -430,12 +428,12 @@ class BaseTrainer(ABC):
                 self.policy.optim.step()
             
             
-            # Print out models params for debugging
-            # print(self.policy.state_dict())
-            for param_idx, params in enumerate(self.policy.parameters()):
-                if param_idx == 0:
-                    print(params)
-                    exit()
+            # # Print out models params for debugging
+            print(self.policy.state_dict())
+            # for param_idx, params in enumerate(self.policy.parameters()):
+            #     if param_idx == 0:
+            #         print(params)
+            #         exit()
            
             return self.epoch, epoch_stat, info
         else:
