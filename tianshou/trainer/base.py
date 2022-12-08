@@ -416,7 +416,7 @@ class BaseTrainer(ABC):
             
             # Print out models params for debugging
             for param_idx, params in enumerate(self.policy.parameters()):
-                print(params) 
+                print(params.grad) 
            
             return self.epoch, epoch_stat, info
         else:
