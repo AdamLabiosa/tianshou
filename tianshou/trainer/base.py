@@ -404,18 +404,18 @@ class BaseTrainer(ABC):
                 self.start_time, self.train_collector, self.test_collector,
                 self.best_reward, self.best_reward_std
             )
-
+            # train_collector.policy
             if self.distributed:
-                model = self.policy
+                model = self.train_collector.policy
                 for params in model.parameters():
                     params.grad = params.grad / self.group_size
                     dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
-                self.save_best_fn(model)
+                self.train_collector.policy = model
 
 
             
             # Print out models params for debugging
-            print(self.policy.state_dict())
+            print(self.train_collector.policy)
             exit()
             
             return self.epoch, epoch_stat, info
