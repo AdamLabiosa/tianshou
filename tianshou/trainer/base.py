@@ -405,13 +405,47 @@ class BaseTrainer(ABC):
                 self.best_reward, self.best_reward_std
             )
 
-            # if self.distributed:
-            #     for params in self.policy.parameters():
-            #         params.grad = params.grad / self.group_size
-            #         dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+            if self.distributed:
+                # Create list to store parameters
+                params_list = [torch.zeros_like(params) for params in self.policy.parameters()]
+                for param_ind, params in enumerate(self.policy.parameters()):
+                    params.grad = params.grad / self.group_size
+                    dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+                    params_list[param_ind] = params.grad
+                
+                # set the policy parameters to the average of all nodes
+                for param_ind, params in enumerate(self.policy.parameters()):
+                    self.policy.parameters()[param_ind] = params_list[param_ind]
             
-            # # Apply the gradient to the policy parameters
-            # self.policy.optim.step()
+            # # Create list of tensors to hold the policy parameters
+            # params_list = [torch.zeros_like(params) for params in self.policy.parameters()]
+            # if self.rank == 0:
+            #     # current node is root
+            #     for param_idx, params in enumerate(self.policy.parameters()):
+            #         # list to hold gradient from each of the nodes
+            #         grads_from_nodes = [torch.zeros_like(params.grad) for _ in range(self.group_size)]
+
+            #         # Gathers a list of tensors in a single process: gather gradients from other nodes
+            #         dist.gather(params.grad, grads_from_nodes, group=self.group, async_op=False)
+
+            #         # average the gradients
+            #         grad_sum = torch.zeros_like(params.grad)
+            #         for i in range(self.group_size):
+            #             grad_sum += grads_from_nodes[i]
+            #         grad_mean = grad_sum / self.group_size
+                
+            #         # Scatters a list of tensors to all processes in a group: scatter back to nodes
+            #         scatter_list = [grad_mean] * self.group_size
+            #         dist.scatter(params.grad, scatter_list, group=self.group, src=0, async_op=False)
+            # else:
+            #     # current node is one of the workers
+            #     # The worker node first sends its gradient to the root node, and then receives the averaged gradient calculated by the root node.
+            #     for param_idx, params in enumerate(self.policy.parameters()):
+            #         # send gradient to root (rank=0)
+            #         dist.gather(params.grad, group=self.group, async_op=False)
+            #         # receive back the gradient from root
+            #         dist.scatter(params.grad, group=self.group, src=0, async_op=False)
+            
 
             return self.epoch, epoch_stat, info
         else:
