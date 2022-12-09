@@ -229,7 +229,7 @@ class BaseTrainer(ABC):
 
         if self.distributed:
             ## INIT DIST ##
-            init_method = "tcp://{}:6657".format(self.master_ip)
+            init_method = "tcp://{}:6658".format(self.master_ip)
             print('initizaling distributed')
             # dist.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
@@ -289,10 +289,11 @@ class BaseTrainer(ABC):
         if self.iter_num > 1:
             print(self.stop_fn_flag)
             if self.distributed:
+                stop = self.stop_fn_flag or self.epoch > self.max_epoch
                 # Wait for all processes to finish
                 dist.barrier()
                 # Gather and scatter self.stop_fn_flag 
-                int_stop = int(self.stop_fn_flag)
+                int_stop = int(stop)
                 # Make int_stop a tensor
                 int_stop = torch.tensor(int_stop)
                 if self.rank == 0:
@@ -320,12 +321,10 @@ class BaseTrainer(ABC):
                     dist.scatter(int_stop, group=self.group, src=0, async_op=False)
                 
                 # convert back to bool
-                self.stop_fn_flag = bool(int_stop)
-                print(self.stop_fn_flag)
-                print()
+                stop = bool(int_stop)
 
-                # If all processes have finished, raise StopIteration
-                if self.stop_fn_flag:
+                # If any processes have finished, raise StopIteration
+                if stop:
                     raise StopIteration
 
                 
