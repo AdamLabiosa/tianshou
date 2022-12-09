@@ -308,6 +308,8 @@ class BaseTrainer(ABC):
                 int_stop = int(self.stop_fn_flag)
                 # Make int_stop a tensor
                 int_stop = torch.tensor(int_stop)
+                print(self.rank)
+                exit()
                 if self.rank == 0:
                     # current node is root
                     
@@ -337,10 +339,6 @@ class BaseTrainer(ABC):
 
                 # If all processes have finished, raise StopIteration
                 if self.stop_fn_flag:
-                    # Print out models params for debugging
-                    # print(self.policy.state_dict())
-                    for params in self.policy.parameters():
-                        print(params)
                     raise StopIteration
 
                 
