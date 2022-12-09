@@ -7,6 +7,11 @@ import torch
 from tianshou.data import Batch, ReplayBuffer, to_numpy, to_torch_as
 from tianshou.policy import BasePolicy
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class DQNPolicy(BasePolicy):
     """Implementation of Deep Q Network. arXiv:1312.5602.
@@ -48,6 +53,10 @@ class DQNPolicy(BasePolicy):
         reward_normalization: bool = False,
         is_double: bool = True,
         clip_loss_grad: bool = False,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -67,6 +76,23 @@ class DQNPolicy(BasePolicy):
         self._rew_norm = reward_normalization
         self._is_double = is_double
         self._clip_loss_grad = clip_loss_grad
+
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6650".format(self.masterip)
+            print('initizaling distributed')
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+        self.group_list = []
+        for group in range(0, self.num_nodes):
+            self.group_list.append(group)
+
+        self.group = distribute.new_group(self.group_list)
+        self.group_size = len(self.group_list)
 
     def set_eps(self, eps: float) -> None:
         """Set the eps for epsilon-greedy exploration."""
@@ -183,6 +209,11 @@ class DQNPolicy(BasePolicy):
 
         batch.weight = td_error  # prio-buffer
         loss.backward()
+        # if distributed
+        if self.distr:
+            for param in self.model.parameters():
+                distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM, group=self.group)
+                param.grad.data /= self.group_size
         self.optim.step()
         self._iter += 1
         return {"loss": loss.item()}
