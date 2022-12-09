@@ -291,6 +291,7 @@ class BaseTrainer(ABC):
             if self.distributed:
                 stop = self.stop_fn_flag or self.epoch > self.max_epoch
                 # Wait for all processes to finish
+                print('at barrier')
                 dist.barrier()
                 # Gather and scatter self.stop_fn_flag 
                 int_stop = int(stop)
