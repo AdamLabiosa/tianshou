@@ -476,7 +476,7 @@ class BaseTrainer(ABC):
                 dist.scatter(int_stop, group=self.group, src=0, async_op=False)
             
             # convert back to bool
-            if not self.stop_fn_flag and int_stop.item() == 0:
+            if not self.stop_fn_flag and int_stop.item() == 1:
                 exit()
 
         return data, result, stop_fn_flag
