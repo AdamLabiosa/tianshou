@@ -65,4 +65,5 @@ try:
         rank=rank)
 except:
     print("Another process has finished training, exiting...")
-print(f'Finished training! Use {result["duration"]}')
+if result:
+    print(f'Finished training! Use {result["duration"]}')
