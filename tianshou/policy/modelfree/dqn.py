@@ -213,6 +213,7 @@ class DQNPolicy(BasePolicy):
         
         # If distributed
         if self.distr:
+            distribute.barrier()
             # every 20 iterations, sync the gradients
             if self._iter % 20 == 0:
                 # sync gradients
