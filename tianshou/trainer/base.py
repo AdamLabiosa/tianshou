@@ -419,21 +419,21 @@ class BaseTrainer(ABC):
                 self.best_reward, self.best_reward_std
             )
             
-            if self.distributed:
-                for param_idx, params in enumerate(self.policy.parameters()):
-                    params.grad = params.grad / self.group_size
-                    dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
-                    # if param_idx == 0:
-                    #     print(params.grad)
-                self.policy.optim.step()
+            # if self.distributed:
+            #     for param_idx, params in enumerate(self.policy.parameters()):
+            #         params.grad = params.grad / self.group_size
+            #         dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
+            #         # if param_idx == 0:
+            #         #     print(params.grad)
+            #     self.policy.optim.step()
             
             
-            # # Print out models params for debugging
-            print(self.policy.state_dict())
-            # for param_idx, params in enumerate(self.policy.parameters()):
-            #     if param_idx == 0:
-            #         print(params)
-            #         exit()
+            # # # Print out models params for debugging
+            # print(self.policy.state_dict())
+            # # for param_idx, params in enumerate(self.policy.parameters()):
+            # #     if param_idx == 0:
+            # #         print(params)
+            # #         exit()
            
             return self.epoch, epoch_stat, info
         else:
