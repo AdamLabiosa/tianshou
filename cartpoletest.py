@@ -8,11 +8,21 @@ from tianshou.policy import PPOPolicy
 from tianshou.trainer import onpolicy_trainer
 from tianshou.utils.net.common import ActorCritic, Net
 from tianshou.utils.net.discrete import Actor, Critic
-
+import argparse
 import warnings
 warnings.filterwarnings('ignore')
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--num_nodes', type=int, default=4)
+parser.add_argument('--rank', type=int, default=0)
+parser.add_argument('--masterip', type=str, default='10.10.1.1')
+
 if __name__ == '__main__':
+    args = parser.parse_args()
+    num_nodes = args.num_nodes
+    rank = args.rank
+    masterip = args.masterip
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     env = gym.make('CartPole-v0')
     train_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(20)])
@@ -24,9 +34,10 @@ if __name__ == '__main__':
     actor_critic = ActorCritic(actor, critic)
     optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
     
+
     # PPO policy
     dist = torch.distributions.Categorical
-    policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True)
+    policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distribute=True, num_nodes=num_nodes, rank=rank, masterip=masterip)
             
             
     # collector

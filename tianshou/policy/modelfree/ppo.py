@@ -15,7 +15,7 @@ torch.set_num_threads(4)
 
 
 class PPOPolicy(A2CPolicy):
-    r"""Implementation of Proximal Policy Optimization. arXiv:1707.06347.
+    """Implementation of Proximal Policy Optimization. arXiv:1707.06347.
 
     :param torch.nn.Module actor: the actor network following the rules in
         :class:`~tianshou.policy.BasePolicy`. (s -> logits)
@@ -77,6 +77,10 @@ class PPOPolicy(A2CPolicy):
         advantage_normalization: bool = True,
         recompute_advantage: bool = False,
         distributed: bool = False,
+        distribute: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(actor, critic, optim, dist_fn, **kwargs)
@@ -93,15 +97,18 @@ class PPOPolicy(A2CPolicy):
         self._actor_critic: ActorCritic
         self._distributed = distributed
 
-        self.distributed = True
+        self.distribute = distribute
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
         if self.distributed:
             ## INIT DIST ##
-            init_method = "tcp://{}:6650".format('10.10.1.1')
+            init_method = "tcp://{}:6650".format(self.masterip)
             print('initizaling distributed')
-            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=4, rank=3)
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
         self.group_list = []
-        for group in range(0, 4):
+        for group in range(0, self.num_nodes):
             self.group_list.append(group)
 
         self.group = distribute.new_group(self.group_list)
@@ -168,10 +175,10 @@ class PPOPolicy(A2CPolicy):
                     nn.utils.clip_grad_norm_(
                         self._actor_critic.parameters(), max_norm=self._grad_norm
                     )
-                # if self.distributed:
-                for params in self._actor_critic.parameters():
-                    params.grad = params.grad / self.group_size
-                    distribute.all_reduce(params.grad, op=distribute.ReduceOp.SUM, group=self.group, async_op=False)
+                if self.distribute:
+                    for params in self._actor_critic.parameters():
+                        params.grad = params.grad / self.group_size
+                        distribute.all_reduce(params.grad, op=distribute.ReduceOp.SUM, group=self.group, async_op=False)
             
                 self.optim.step()
                 clip_losses.append(clip_loss.item())
