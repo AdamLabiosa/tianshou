@@ -83,7 +83,7 @@ class DQNPolicy(BasePolicy):
         self.masterip = masterip
         if self.distr:
             ## INIT DIST ##
-            init_method = "tcp://{}:6004".format(self.masterip)
+            init_method = "tcp://{}:6005".format(self.masterip)
             print('initizaling distributed')
             print('rank: ', self.rank)
             distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
@@ -213,7 +213,7 @@ class DQNPolicy(BasePolicy):
         
         # If distributed
         if self.distr:
-            distribute.barrier()
+            # distribute.barrier()
             # every 20 iterations, sync the gradients
             if self._iter % 20 == 0:
                 # sync gradients
