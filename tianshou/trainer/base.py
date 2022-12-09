@@ -444,40 +444,39 @@ class BaseTrainer(ABC):
                     self.policy.train()
 
         if self.distributed:
-                stop = self.stop_fn_flag or self.epoch > self.max_epoch
-                # Wait for all processes to finish
-                dist.barrier()
-                print('at barrier')
-                # Gather and scatter self.stop_fn_flag 
-                int_stop = int(stop)
-                # Make int_stop a tensor
-                int_stop = torch.tensor(int_stop)
-                if self.rank == 0:
-                    # current node is root
-                    
-                    # list to hold the stop flag from all nodes
-                    stop_from_nodes = [torch.zeros_like(int_stop) for _ in range(self.group_size)]
-
-                    # Gathers a list of tensors in a single process
-                    dist.gather(int_stop, stop_from_nodes, group=self.group, async_op=False)
-
-                    # if any are true, then stop
-                    if any(stop_from_nodes):
-                        int_stop = torch.tensor(1)
-                    else:
-                        int_stop = torch.tensor(0)
+            stop = self.stop_fn_flag or self.epoch > self.max_epoch
+            # Wait for all processes to finish
+            dist.barrier()
+            # Gather and scatter self.stop_fn_flag 
+            int_stop = int(stop)
+            # Make int_stop a tensor
+            int_stop = torch.tensor(int_stop)
+            if self.rank == 0:
+                # current node is root
                 
-                    # Scatters a list of tensors to all processes in a group: scatter back to nodes
-                    scatter_list = [int_stop] * self.group_size
-                    dist.scatter(int_stop, scatter_list, group=self.group, src=0, async_op=False)
+                # list to hold the stop flag from all nodes
+                stop_from_nodes = [torch.zeros_like(int_stop) for _ in range(self.group_size)]
+
+                # Gathers a list of tensors in a single process
+                dist.gather(int_stop, stop_from_nodes, group=self.group, async_op=False)
+
+                # if any are true, then stop
+                if any(stop_from_nodes):
+                    int_stop = torch.tensor(1)
                 else:
-                    # current node is one of the workers
-                    dist.gather(int_stop, group=self.group, async_op=False)
-                    # receive back the stop flag from root
-                    dist.scatter(int_stop, group=self.group, src=0, async_op=False)
-                
-                # convert back to bool
-                stop_fn_flag = bool(int_stop)
+                    int_stop = torch.tensor(0)
+            
+                # Scatters a list of tensors to all processes in a group: scatter back to nodes
+                scatter_list = [int_stop] * self.group_size
+                dist.scatter(int_stop, scatter_list, group=self.group, src=0, async_op=False)
+            else:
+                # current node is one of the workers
+                dist.gather(int_stop, group=self.group, async_op=False)
+                # receive back the stop flag from root
+                dist.scatter(int_stop, group=self.group, src=0, async_op=False)
+            
+            # convert back to bool
+            stop_fn_flag = bool(int_stop)
 
         return data, result, stop_fn_flag
 
