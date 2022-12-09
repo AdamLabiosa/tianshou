@@ -54,7 +54,7 @@ if __name__ == '__main__':
         rank: int = 0, 
         masterip: str = '10.10.1.1','''
 
-    policy = BranchingDQNPolicy(net, optim, discount_factor=0.99, estimation_step=1, target_update_freq=0, reward_normalization=False, is_double=True, distr=False, num_nodes=num_nodes, rank=rank, masterip=masterip).to(device)
+    policy = BranchingDQNPolicy(net, optim, discount_factor=0.99, estimation_step=1, target_update_freq=0, reward_normalization=False, is_double=True, distr=True, num_nodes=num_nodes, rank=rank, masterip=masterip).to(device)
     # collector
     train_collector = Collector(policy, train_envs, VectorReplayBuffer(20000, len(train_envs)))
     test_collector = Collector(policy, test_envs)
