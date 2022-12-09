@@ -52,14 +52,17 @@ policy = ts.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3,
 train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuffer(20000, 10), exploration_noise=True, )
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
-result = ts.trainer.offpolicy_trainer(
-    policy, train_collector, test_collector,
-    max_epoch=10, step_per_epoch=10000, step_per_collect=10,
-    update_per_step=0.1, episode_per_test=100, batch_size=64,
-    train_fn=lambda epoch, env_step: policy.set_eps(0.1),
-    test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-    stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold, 
-    distributed=DISTRIBUTED,
-    num_nodes=num_nodes,
-    rank=rank)
+try:
+    result = ts.trainer.offpolicy_trainer(
+        policy, train_collector, test_collector,
+        max_epoch=10, step_per_epoch=10000, step_per_collect=10,
+        update_per_step=0.1, episode_per_test=100, batch_size=64,
+        train_fn=lambda epoch, env_step: policy.set_eps(0.1),
+        test_fn=lambda epoch, env_step: policy.set_eps(0.05),
+        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold, 
+        distributed=DISTRIBUTED,
+        num_nodes=num_nodes,
+        rank=rank)
+except:
+    print("Another process has finished training, exiting...")
 print(f'Finished training! Use {result["duration"]}')
