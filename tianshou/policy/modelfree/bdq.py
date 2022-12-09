@@ -7,6 +7,11 @@ from tianshou.data import Batch, ReplayBuffer, to_numpy, to_torch, to_torch_as
 from tianshou.policy import DQNPolicy
 from tianshou.utils.net.common import BranchingNet
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class BranchingDQNPolicy(DQNPolicy):
     """Implementation of the Branching dual Q network arXiv:1711.08946.
@@ -37,6 +42,10 @@ class BranchingDQNPolicy(DQNPolicy):
         target_update_freq: int = 0,
         reward_normalization: bool = False,
         is_double: bool = True,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -46,6 +55,23 @@ class BranchingDQNPolicy(DQNPolicy):
         assert estimation_step == 1, "N-step bigger than one is not supported by BDQ"
         self.max_action_num = model.action_per_branch
         self.num_branches = model.num_branches
+
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6650".format(self.masterip)
+            print('initizaling distributed')
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+        self.group_list = []
+        for group in range(0, self.num_nodes):
+            self.group_list.append(group)
+
+        self.group = distribute.new_group(self.group_list)
+        self.group_size = len(self.group_list)
 
     def _target_q(self, buffer: ReplayBuffer, indices: np.ndarray) -> torch.Tensor:
         batch = buffer[indices]  # batch.obs_next: s_{t+n}
@@ -123,6 +149,12 @@ class BranchingDQNPolicy(DQNPolicy):
         loss = (td_error.pow(2).sum(-1).mean(-1) * weight).mean()
         batch.weight = td_error.sum(-1).sum(-1)  # prio-buffer
         loss.backward()
+        # if distributed
+        if self.distr:
+            for param in self.model.parameters():
+                distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM, group=self.group)
+                param.grad.data /= self.group_size
+
         self.optim.step()
         self._iter += 1
         return {"loss": loss.item()}
