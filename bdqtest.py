@@ -42,7 +42,21 @@ if __name__ == '__main__':
 
     # PPO policy
     dist = torch.distributions.Categorical
-    policy = BCQPolicy(net, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=True, num_nodes=num_nodes, rank=rank, masterip=masterip)
+    '''actor: torch.nn.Module,
+        actor_optim: torch.optim.Optimizer,
+        critic1: torch.nn.Module,
+        critic1_optim: torch.optim.Optimizer,
+        critic2: torch.nn.Module,
+        critic2_optim: torch.optim.Optimizer,
+        vae: VAE,
+        vae_optim: torch.optim.Optimizer,
+        device: Union[str, torch.device] = "cpu",
+        gamma: float = 0.99,
+        tau: float = 0.005,
+        lmbda: float = 0.75,
+        forward_sampled_times: int = 100,
+        num_sampled_action: int = 10,'''
+    policy = BCQPolicy(actor=net, actor_optim=optim, critic1=net, critic1_optim=optim, critic2=net, critic2_optim=optim, vae=net, vae_optim=optim, device=device, gamma=0.99, tau=0.005, lmbda=0.75, forward_sampled_times=100, num_sampled_action=10)
             
             
     # collector
