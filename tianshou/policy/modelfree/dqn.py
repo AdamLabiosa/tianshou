@@ -88,12 +88,12 @@ class DQNPolicy(BasePolicy):
             print('rank: ', self.rank)
             distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
-        self.group_list = []
-        for group in range(0, self.num_nodes):
-            self.group_list.append(group)
+            self.group_list = []
+            for group in range(0, self.num_nodes):
+                self.group_list.append(group)
 
-        self.group = distribute.new_group(self.group_list)
-        self.group_size = len(self.group_list)
+            self.group = distribute.new_group(self.group_list)
+            self.group_size = len(self.group_list)
 
     def set_eps(self, eps: float) -> None:
         """Set the eps for epsilon-greedy exploration."""
