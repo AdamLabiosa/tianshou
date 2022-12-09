@@ -4,7 +4,7 @@ import torch
 
 from tianshou.data import Collector, VectorReplayBuffer
 from tianshou.env import DummyVectorEnv
-from tianshou.policy import BCQPolicy
+from tianshou.policy import BranchingDQNPolicy
 from tianshou.trainer import offpolicy_trainer
 from tianshou.utils.net.common import BranchingNet, Net
 import argparse
@@ -42,23 +42,19 @@ if __name__ == '__main__':
 
     # PPO policy
     dist = torch.distributions.Categorical
-    '''actor: torch.nn.Module,
-        actor_optim: torch.optim.Optimizer,
-        critic1: torch.nn.Module,
-        critic1_optim: torch.optim.Optimizer,
-        critic2: torch.nn.Module,
-        critic2_optim: torch.optim.Optimizer,
-        vae: VAE,
-        vae_optim: torch.optim.Optimizer,
-        device: Union[str, torch.device] = "cpu",
-        gamma: float = 0.99,
-        tau: float = 0.005,
-        lmbda: float = 0.75,
-        forward_sampled_times: int = 100,
-        num_sampled_action: int = 10,'''
-    policy = BCQPolicy(actor=net, actor_optim=optim, critic1=net, critic1_optim=optim, critic2=net, critic2_optim=optim, vae=net, vae_optim=optim, device=device, gamma=0.99, tau=0.005, lmbda=0.75, forward_sampled_times=100, num_sampled_action=10)
-            
-            
+    '''model: BranchingNet,
+        optim: torch.optim.Optimizer,
+        discount_factor: float = 0.99,
+        estimation_step: int = 1,
+        target_update_freq: int = 0,
+        reward_normalization: bool = False,
+        is_double: bool = True,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1','''
+
+    policy = BranchingDQNPolicy(net, optim, discount_factor=0.99, estimation_step=1, target_update_freq=0, reward_normalization=False, is_double=True, distr=False, num_nodes=num_nodes, rank=rank, masterip=masterip).to(device)
     # collector
     train_collector = Collector(policy, train_envs, VectorReplayBuffer(20000, len(train_envs)))
     test_collector = Collector(policy, test_envs)
