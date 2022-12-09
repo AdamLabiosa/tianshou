@@ -83,8 +83,9 @@ class DQNPolicy(BasePolicy):
         self.masterip = masterip
         if self.distr:
             ## INIT DIST ##
-            init_method = "tcp://{}:6650".format(self.masterip)
+            init_method = "tcp://{}:6651".format(self.masterip)
             print('initizaling distributed')
+            print('rank: ', self.rank)
             distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
         self.group_list = []
