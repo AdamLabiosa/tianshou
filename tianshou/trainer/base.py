@@ -443,7 +443,7 @@ class BaseTrainer(ABC):
                 else:
                     self.policy.train()
 
-        if self.distributed:
+        if self.distributed and result["n/ep"] % 20 == 0:
             stop = self.stop_fn_flag or self.epoch > self.max_epoch
             # Wait for all processes to finish
             dist.barrier()
@@ -476,7 +476,8 @@ class BaseTrainer(ABC):
                 dist.scatter(int_stop, group=self.group, src=0, async_op=False)
             
             # convert back to bool
-            stop_fn_flag = bool(int_stop)
+            if not self.stop_fn_flag and int_stop.item() == 0:
+                exit()
 
         return data, result, stop_fn_flag
 
