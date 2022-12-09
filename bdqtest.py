@@ -27,8 +27,16 @@ if __name__ == '__main__':
     train_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(20)])
     test_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(10)])
 
-    # net = Net(env.observation_space.shape, hidden_sizes=[64, 64], device=device)
-    net = BranchingNet(env.observation_space.shape, hidden_sizes=[64, 64], device=device)
+    '''state_shape: Union[int, Sequence[int]],
+        num_branches: int = 0,
+        action_per_branch: int = 2,
+        common_hidden_sizes: List[int] = [],
+        value_hidden_sizes: List[int] = [],
+        action_hidden_sizes: List[int] = [],
+        norm_layer: Optional[ModuleType] = None,
+        activation: Optional[ModuleType] = nn.ReLU,'''
+
+    net = BranchingNet(state_shape=env.observation_space.shape, num_branches=1, action_per_branch=env.action_space.n, common_hidden_sizes=[64, 64], value_hidden_sizes=[64, 64], action_hidden_sizes=[64, 64], device=device).to(device)
     optim = torch.optim.Adam(net.parameters(), lr=0.0003)
     
 
@@ -58,27 +66,4 @@ if __name__ == '__main__':
             rank=rank,
     )
 
-
-
-    # trainer
-    # result = onpolicy_trainer(
-    #     policy,
-    #     train_collector,
-    #     test_collector,
-    #     max_epoch=10,
-    #     step_per_epoch=50000,
-    #     repeat_per_collect=10,
-    #     episode_per_test=10,
-    #     batch_size=256,
-    #     step_per_collect=2000,
-    #     stop_fn=lambda mean_reward: mean_reward >= 195,
-    #     distributed=True,
-    #     num_nodes=num_nodes,
-    #     rank=rank,
-    # )
     print(result)
-
-    # # Let's watch its performance!
-    # policy.eval()
-    # result = test_collector.collect(n_episode=1, render=True)
-    # print("Final reward: {}, length: {}".format(result["rews"].mean(), result["lens"].mean()))
