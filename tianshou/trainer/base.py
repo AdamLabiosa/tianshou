@@ -287,6 +287,8 @@ class BaseTrainer(ABC):
         self.iter_num += 1
 
         if self.iter_num > 1:
+            print(self.stop_fn_flag)
+            exit()
             if self.distributed:
                 # Wait for all processes to finish
                 dist.barrier()
