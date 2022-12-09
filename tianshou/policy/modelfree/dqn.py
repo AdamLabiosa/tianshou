@@ -213,7 +213,7 @@ class DQNPolicy(BasePolicy):
         # if distributed
         if self.distr:
             # If root
-            if self.group_rank == 0:
+            if self.rank == 0:
                 self.optim.step()
                 # Individually reduce gradients for all other nodes
                 for i in range(1, self.group_size):
@@ -224,7 +224,7 @@ class DQNPolicy(BasePolicy):
                 for param in self.model.parameters():
                     self.group.send(param.grad.data, dest=0)
             # Send weights to all other nodes
-            if self.group_rank == 0:
+            if self.rank == 0:
                 for i in range(1, self.group_size):
                     for param in self.model.parameters():
                         self.group.send(param.data, dest=i)
