@@ -4,7 +4,7 @@ import torch, numpy as np
 from torch import nn
 import argparse
 
-DISTRIBUTED = False
+DISTRIBUTED = True
 
 
 parser = argparse.ArgumentParser()
