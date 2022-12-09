@@ -288,7 +288,6 @@ class BaseTrainer(ABC):
 
         if self.iter_num > 1:
             print(self.stop_fn_flag)
-            exit()
             if self.distributed:
                 # Wait for all processes to finish
                 dist.barrier()
@@ -322,6 +321,8 @@ class BaseTrainer(ABC):
                 
                 # convert back to bool
                 self.stop_fn_flag = bool(int_stop)
+                print(self.stop_fn_flag)
+                print()
 
                 # If all processes have finished, raise StopIteration
                 if self.stop_fn_flag:
