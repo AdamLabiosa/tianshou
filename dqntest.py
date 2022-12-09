@@ -4,6 +4,8 @@ import torch, numpy as np
 from torch import nn
 import argparse
 
+DISTRIBUTED = True
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_nodes', type=int, default=4)
@@ -45,7 +47,7 @@ action_shape = env.action_space.shape or env.action_space.n
 net = Net(state_shape, action_shape)
 optim = torch.optim.Adam(net.parameters(), lr=1e-3)
 
-policy = ts.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3, target_update_freq=320, distr=False, num_nodes=4, rank=rank)
+policy = ts.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3, target_update_freq=320, distr=DISTRIBUTED, num_nodes=4, rank=rank)
 
 train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuffer(20000, 10), exploration_noise=True, )
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
@@ -57,7 +59,7 @@ result = ts.trainer.offpolicy_trainer(
     train_fn=lambda epoch, env_step: policy.set_eps(0.1),
     test_fn=lambda epoch, env_step: policy.set_eps(0.05),
     stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold, 
-    distributed=False,
+    distributed=DISTRIBUTED,
     num_nodes=num_nodes,
     rank=rank)
 print(f'Finished training! Use {result["duration"]}')
