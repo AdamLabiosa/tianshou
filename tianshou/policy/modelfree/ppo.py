@@ -101,7 +101,7 @@ class PPOPolicy(A2CPolicy):
         self.num_nodes = num_nodes
         self.rank = rank
         self.masterip = masterip
-        if self.distributed:
+        if self.distribute:
             ## INIT DIST ##
             init_method = "tcp://{}:6650".format(self.masterip)
             print('initizaling distributed')
