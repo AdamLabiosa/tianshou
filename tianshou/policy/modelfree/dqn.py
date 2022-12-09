@@ -212,29 +212,12 @@ class DQNPolicy(BasePolicy):
         loss.backward()
         # if distributed
         if self.distr:
-            # If root
-            if self.rank == 0:
-                self.optim.step()
-                # Individually reduce gradients for all other nodes
-                for i in range(1, self.group_size):
-                    for param in self.model.parameters():
-                        param.grad.data += self.group.recv(param.grad.data, src=i)
-                    self.optim.step()
-            else:
-                for param in self.model.parameters():
-                    self.group.send(param.grad.data, dest=0)
-            # Send weights to all other nodes
-            if self.rank == 0:
-                for i in range(1, self.group_size):
-                    for param in self.model.parameters():
-                        self.group.send(param.data, dest=i)
-            else:
-                for param in self.model.parameters():
-                    param.data = self.group.recv(param.data, src=0)
+            # Average weights across workers
+            for param in self.model.parameters():
+                distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
+                param.grad.data /= distribute.get_world_size()
+                
 
-            # for param in self.model.parameters():
-            #     distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM, group=self.group)
-            #     param.grad.data /= self.group_size
         else:
             self.optim.step()
         self._iter += 1
