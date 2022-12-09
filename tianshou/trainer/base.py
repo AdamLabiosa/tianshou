@@ -446,7 +446,6 @@ class BaseTrainer(ABC):
         if self.distributed and result["n/ep"] % 20 == 0:
             stop = self.stop_fn_flag or self.epoch > self.max_epoch
             # Wait for all processes to finish
-            dist.barrier()
             # Gather and scatter self.stop_fn_flag 
             int_stop = int(stop)
             # Make int_stop a tensor
