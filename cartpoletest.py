@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # PPO policy
     dist = torch.distributions.Categorical
-    policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distribute=True, num_nodes=num_nodes, rank=rank, masterip=masterip)
+    policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=True, num_nodes=num_nodes, rank=rank, masterip=masterip)
             
             
     # collector

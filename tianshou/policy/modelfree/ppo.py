@@ -77,7 +77,7 @@ class PPOPolicy(A2CPolicy):
         advantage_normalization: bool = True,
         recompute_advantage: bool = False,
         distributed: bool = False,
-        distribute: bool = False,
+        distr: bool = False,
         num_nodes: int = 4,
         rank: int = 0, 
         masterip: str = '10.10.1.1',
@@ -97,11 +97,11 @@ class PPOPolicy(A2CPolicy):
         self._actor_critic: ActorCritic
         self._distributed = distributed
 
-        self.distribute = distribute
+        self.distr = distr
         self.num_nodes = num_nodes
         self.rank = rank
         self.masterip = masterip
-        if self.distribute:
+        if self.distr:
             ## INIT DIST ##
             init_method = "tcp://{}:6650".format(self.masterip)
             print('initizaling distributed')
@@ -175,7 +175,7 @@ class PPOPolicy(A2CPolicy):
                     nn.utils.clip_grad_norm_(
                         self._actor_critic.parameters(), max_norm=self._grad_norm
                     )
-                if self.distribute:
+                if self.distr:
                     for params in self._actor_critic.parameters():
                         params.grad = params.grad / self.group_size
                         distribute.all_reduce(params.grad, op=distribute.ReduceOp.SUM, group=self.group, async_op=False)
