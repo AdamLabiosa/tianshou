@@ -277,20 +277,6 @@ class BaseTrainer(ABC):
         self.stop_fn_flag = False
         self.iter_num = 0
 
-        # if self.distributed:
-        #     for param_idx, params in enumerate(self.policy.parameters()):
-        #         # Get weights from the first process
-        #         if self.rank == 0:
-        #             # Get weights from the first process
-        #             weights = params.data
-        #         else:
-        #             # Create a tensor of zeros to store the weights
-        #             weights = torch.zeros_like(params.data)
-        #         # Broadcast the weights to all processes
-        #         dist.broadcast(weights, src=0, group=self.group)
-        #         # Set the weights of the current process
-        #         params.data = weights
-
     def __iter__(self):  # type: ignore
         self.reset()
         return self
@@ -308,8 +294,6 @@ class BaseTrainer(ABC):
                 int_stop = int(self.stop_fn_flag)
                 # Make int_stop a tensor
                 int_stop = torch.tensor(int_stop)
-                print(self.rank)
-                exit()
                 if self.rank == 0:
                     # current node is root
                     
@@ -417,22 +401,6 @@ class BaseTrainer(ABC):
                 self.best_reward, self.best_reward_std
             )
             
-            # if self.distributed:
-            #     for param_idx, params in enumerate(self.policy.parameters()):
-            #         params.grad = params.grad / self.group_size
-            #         dist.all_reduce(params.grad, op=dist.ReduceOp.SUM, group=self.group, async_op=False)
-            #         # if param_idx == 0:
-            #         #     print(params.grad)
-            #     self.policy.optim.step()
-            
-            
-            # # # Print out models params for debugging
-            # print(self.policy.state_dict())
-            # # for param_idx, params in enumerate(self.policy.parameters()):
-            # #     if param_idx == 0:
-            # #         print(params)
-            # #         exit()
-           
             return self.epoch, epoch_stat, info
         else:
             return None

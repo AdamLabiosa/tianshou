@@ -57,8 +57,8 @@ if __name__ == '__main__':
         step_per_collect=2000,
         stop_fn=lambda mean_reward: mean_reward >= 195,
         distributed=True,
-        num_nodes=4,
-        rank=0,
+        num_nodes=num_nodes,
+        rank=rank,
     )
     print(result)
 
