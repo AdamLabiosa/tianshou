@@ -290,7 +290,6 @@ class BaseTrainer(ABC):
             print(self.stop_fn_flag)
             if self.distributed:
                 stop = self.stop_fn_flag or self.epoch > self.max_epoch
-                dist.stop_server()
                 # Wait for all processes to finish
                 print('at barrier')
                 # Gather and scatter self.stop_fn_flag 
