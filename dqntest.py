@@ -69,12 +69,15 @@ try:
         num_nodes=num_nodes,
         rank=rank)
     print(f'Final reward: {result["rews"].mean()}, length: {result["lens"].mean()}')
-    torch.save(policy.state_dict(), 'dqn.pth')
-    policy.eval()
-    policy.set_eps(0.05)
-    collector = ts.data.Collector(policy, env, exploration_noise=True)
-    collector.collect(n_episode=1, render=1 / 35)
+    #torch.save(policy.state_dict(), 'dqn.pth')
+    #policy.eval()
+    #policy.set_eps(0.05)
+    #collector = ts.data.Collector(policy, env, exploration_noise=True)
+    #collector.collect(n_episode=1, render=1 / 35)
     #_reward = np.array(train_collector.data.rew)
+    print("train_collector.data.rew: ", train_collector.data.rew)
+    print("test_collector.data.rew: ", test_collector.data.rew)
+    print("result.collector.data.rew: ", result.data.rew)
     print("=====================================")
     for i in range(10):
         print("result.train_collector.data.rew: ", result.train_collector.data.rew[i])
@@ -84,7 +87,7 @@ try:
     #print("train_collector.data.rew: ", train_collector.data.rew)
     #print("test_collector.data.rew: ", test_collector.data.rew)
     #print("collector.data.rew: ", collector.data.rew)
-    print("=====================================")
+    print("completed!")
 
     
 except Exception as e:
