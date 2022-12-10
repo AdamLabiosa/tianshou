@@ -71,7 +71,7 @@ try:
         num_nodes=num_nodes,
         rank=rank)
     print("=====================================")
-    pprint.pprint("pp result ", result)
+    restult=train_collector.collect(n_episode=1, render=1 / 35)
     print(f'Final reward: {result["rew"]}, length: {result["len"]}')
    
     print("result.collector.data.rew: ", result.data.rew[0])
