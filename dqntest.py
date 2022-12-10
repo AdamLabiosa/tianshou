@@ -53,6 +53,9 @@ train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuff
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
 try:
+    _reward = []
+    _std= []
+    _time =[]
     result = ts.trainer.offpolicy_trainer(
         policy, train_collector, test_collector,
         max_epoch=10, step_per_epoch=10000, step_per_collect=10,
@@ -63,6 +66,10 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
+    _reward = np.array(train_collector.data.rew)
+    print(_reward)
+
+    
 except Exception as e:
     print(e)
     print()
