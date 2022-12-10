@@ -5,6 +5,10 @@ from torch import nn
 import argparse
 import pprint
 
+from torch.utils.tensorboard import SummaryWriter
+from tianshou.utils import BasicLogger
+
+
 
 DISTRIBUTED = True
 
@@ -26,6 +30,9 @@ test_envs = gym.make('CartPole-v0')
 
 train_envs = ts.env.DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(10)])
 test_envs = ts.env.DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(100)])
+
+writer = SummaryWriter('log/dqn')
+logger = BasicLogger(writer)
 
 class Net(nn.Module):
     def __init__(self, state_shape, action_shape):
@@ -81,4 +88,24 @@ except Exception as e:
     print("Another process has finished training, exiting...")
     exit()
 
+train_collector.collect(n_step=5000, random=True)
+
+policy.set_eps(0.1)
+for i in range(int(1e6)):  # total step
+    collect_result = train_collector.collect(n_step=10)
+
+    # once if the collected episodes' mean returns reach the threshold,
+    # or every 1000 steps, we test it on test_collector
+    if collect_result['rews'].mean() >= env.spec.reward_threshold or i % 1000 == 0:
+        policy.set_eps(0.05)
+        result = test_collector.collect(n_episode=100)
+        if result['rews'].mean() >= env.spec.reward_threshold:
+            print(f'Finished training! Test mean returns: {result["rews"].mean()}')
+            break
+        else:
+            # back to training eps
+            policy.set_eps(0.1)
+
+    # train policy with a sampled batch data from buffer
+    losses = policy.update(64, train_collector.buffer)
 print(f'Finished training! Use {result["duration"]}')
