@@ -55,6 +55,7 @@ test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
 
 try:
+    print("hoooooooooooooooo")
     _reward = []
     _std= []
     _time =[]
@@ -68,7 +69,7 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
-    print(f'Final reward: {result["rews"].mean()}, length: {result["lens"].mean()}')
+   
     #torch.save(policy.state_dict(), 'dqn.pth')
     #policy.eval()
     #policy.set_eps(0.05)
@@ -88,6 +89,7 @@ try:
     #print("test_collector.data.rew: ", test_collector.data.rew)
     #print("collector.data.rew: ", collector.data.rew)
     print("completed!")
+    print(f'Final reward: {result["rews"].mean()}, length: {result["lens"].mean()}')
 
     
 except Exception as e:
