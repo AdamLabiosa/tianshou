@@ -63,7 +63,9 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
-except:
+except Exception as e:
+    print(e)
+    print()
     print("Another process has finished training, exiting...")
     exit()
 

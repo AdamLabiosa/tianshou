@@ -7,6 +7,8 @@ import numpy as np
 import tqdm
 import torch
 
+import os, json
+
 from tianshou.data import AsyncCollector, Collector, ReplayBuffer
 from tianshou.policy import BasePolicy
 from tianshou.trainer.utils import gather_info, test_episode
@@ -227,6 +229,10 @@ class BaseTrainer(ABC):
         self.num_nodes = num_nodes
         self.rank = rank
 
+        self.output_path = f"./outputs"
+        os.makedirs(self.output_path, exist_ok=True)
+        print(f"saving to self.output_path={self.output_path}")
+
         if self.distributed:
             ## INIT DIST ##
             init_method = "tcp://{}:6677".format(self.master_ip)
@@ -309,6 +315,7 @@ class BaseTrainer(ABC):
             progress = DummyTqdm
 
         # perform n step_per_epoch
+        start_time = time.time()
         with progress(
             total=self.step_per_epoch, desc=f"Epoch #{self.epoch}", **tqdm_config
         ) as t:
@@ -326,7 +333,21 @@ class BaseTrainer(ABC):
                     result["n/ep"] = len(self.buffer)
                     result["n/st"] = int(self.gradient_step)
                     t.update()
-
+                
+                save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}_{t.n}.json")
+                with open(save_path, "w+") as file:
+                    sec_elapsed = time.time()-start_time
+                    for k, v in result.items():
+                        if isinstance(v, np.ndarray):
+                            result[k] = v.tolist()
+                    out = {
+                            "epoch": self.epoch, "iter_num": self.iter_num, "n": t.n,
+                            "sec_elapsed": sec_elapsed,
+                            "data": data,
+                            "result": result
+                    }
+                    json.dump(out, file, indent=4)
+                    
                 self.policy_update_fn(data, result)
                 t.set_postfix(**data)
 
