@@ -6,9 +6,6 @@ import argparse
 import pprint
 
 from torch.utils.tensorboard import SummaryWriter
-from tianshou.utils import BasicLogger
-
-
 
 DISTRIBUTED = True
 
@@ -32,7 +29,7 @@ train_envs = ts.env.DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in ran
 test_envs = ts.env.DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(100)])
 
 writer = SummaryWriter('log/dqn')
-logger = BasicLogger(writer)
+logger = ts.utils.BasicLogger(writer)
 
 class Net(nn.Module):
     def __init__(self, state_shape, action_shape):
@@ -61,7 +58,6 @@ policy = ts.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3,
 train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuffer(20000, 10), exploration_noise=True, )
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
-
 try:
     print("hoooooooooooooooo")
     _reward = []
@@ -73,12 +69,17 @@ try:
         update_per_step=0.1, episode_per_test=100, batch_size=64,
         train_fn=lambda epoch, env_step: policy.set_eps(0.1),
         test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold, 
+        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
+        logger=logger, 
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
     print("=====================================")
     print("completed!")
+    print(f'Finished training! Use {result["duration"]}')
+    #torch.save(policy.state_dict(), 'dqn.pth')
+    #policy.load_state_dict(torch.load('dqn.pth'))
+
 
     
 except Exception as e:
@@ -89,22 +90,4 @@ except Exception as e:
 
 train_collector.collect(n_step=5000, random=True)
 
-policy.set_eps(0.1)
-for i in range(int(1e6)):  # total step
-    collect_result = train_collector.collect(n_step=10)
-
-    # once if the collected episodes' mean returns reach the threshold,
-    # or every 1000 steps, we test it on test_collector
-    if collect_result['rews'].mean() >= env.spec.reward_threshold or i % 1000 == 0:
-        policy.set_eps(0.05)
-        result = test_collector.collect(n_episode=100)
-        if result['rews'].mean() >= env.spec.reward_threshold:
-            print(f'Finished training! Test mean returns: {result["rews"].mean()}')
-            break
-        else:
-            # back to training eps
-            policy.set_eps(0.1)
-
-    # train policy with a sampled batch data from buffer
-    losses = policy.update(64, train_collector.buffer)
 print(f'Finished training! Use {result["duration"]}')
