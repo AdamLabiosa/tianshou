@@ -4,6 +4,7 @@ import torch, numpy as np
 from torch import nn
 import argparse
 
+
 DISTRIBUTED = True
 
 
@@ -52,6 +53,7 @@ policy = ts.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3,
 train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuffer(20000, 10), exploration_noise=True, )
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
+
 try:
     _reward = []
     _std= []
@@ -71,8 +73,12 @@ try:
     policy.set_eps(0.05)
     collector = ts.data.Collector(policy, env, exploration_noise=True)
     collector.collect(n_episode=1, render=1 / 35)
-    _reward = np.array(train_collector.data.rew)
-    print(_reward)
+    #_reward = np.array(train_collector.data.rew)
+    print("=====================================")
+    print("train_collector.data.rew: ", train_collector.data.rew)
+    print("test_collector.data.rew: ", test_collector.data.rew)
+    print("collector.data.rew: ", collector.data.rew)
+    print("=====================================")
 
     
 except Exception as e:
