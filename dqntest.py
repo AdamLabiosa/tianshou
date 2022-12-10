@@ -91,7 +91,7 @@ except Exception as e:
 
 train_collector.collect(n_step=5000, random=True)
 pprint.pprint(result)
-print(f'Finished training! Use {result["best_reward"]}')
-print(f'Finished training! Use {result["train_speed"]}')
-
-print(f'Finished training! Use {result["duration"]}')
+for i in range(100):
+    print(result["best_reward"][i])
+    print(result["train_speed"][i])
+    print(result["duration"][i])
