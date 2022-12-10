@@ -66,6 +66,11 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
+    torch.save(policy.state_dict(), 'dqn.pth')
+    policy.eval()
+    policy.set_eps(0.05)
+    collector = ts.data.Collector(policy, env, exploration_noise=True)
+    collector.collect(n_episode=1, render=1 / 35)
     _reward = np.array(train_collector.data.rew)
     print(_reward)
 
