@@ -77,8 +77,7 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
-    print("=====================================")
-    print(f'plz: {result["dutation"]}')
+    print("=====================================") d
     print("completed!")
 
     
