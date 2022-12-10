@@ -76,7 +76,6 @@ try:
         rank=rank)
     print("=====================================")
     print("completed!")
-    print(f'Finished training! Use {result["duration"]}')
     pprint.pprint(result)
     #torch.save(policy.state_dict(), 'dqn.pth')
     #policy.load_state_dict(torch.load('dqn.pth'))
@@ -89,7 +88,12 @@ except Exception as e:
     print("Another process has finished training, exiting...")
     exit()
 
-train_collector.collect(n_step=5000, random=True)
+policy.eval()
+policy.set_eps(0.05)
+collector = ts.data.Collector(policy, env, exploration_noise=True)
+collector.collect(n_episode=1, render=1 / 35)
+
+
 pprint.pprint(result)
 for i in range(100):
     print(result["best_reward"][i])
