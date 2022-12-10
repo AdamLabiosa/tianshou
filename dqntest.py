@@ -75,9 +75,12 @@ try:
     collector.collect(n_episode=1, render=1 / 35)
     #_reward = np.array(train_collector.data.rew)
     print("=====================================")
-    print("train_collector.data.rew: ", train_collector.data.rew)
-    print("test_collector.data.rew: ", test_collector.data.rew)
-    print("collector.data.rew: ", collector.data.rew)
+    for i in range(10):
+        print("train_collector.data.rew: ", train_collector.data.rew[i])
+        print("test_collector.data.rew: ", test_collector.data.rew[i])
+    #print("train_collector.data.rew: ", train_collector.data.rew)
+    #print("test_collector.data.rew: ", test_collector.data.rew)
+    #print("collector.data.rew: ", collector.data.rew)
     print("=====================================")
 
     
