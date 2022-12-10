@@ -77,7 +77,7 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
-    print("=====================================") d
+    print("=====================================")
     print("completed!")
 
     
