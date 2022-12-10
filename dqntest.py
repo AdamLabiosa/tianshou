@@ -77,6 +77,7 @@ try:
     print("=====================================")
     print("completed!")
     print(f'Finished training! Use {result["duration"]}')
+    pprint.pprint(result)
     #torch.save(policy.state_dict(), 'dqn.pth')
     #policy.load_state_dict(torch.load('dqn.pth'))
 
@@ -89,5 +90,8 @@ except Exception as e:
     exit()
 
 train_collector.collect(n_step=5000, random=True)
+pprint.pprint(result)
+print(f'Finished training! Use {result["best_reward"]}')
+print(f'Finished training! Use {result["train_speed"]}')
 
 print(f'Finished training! Use {result["duration"]}')
