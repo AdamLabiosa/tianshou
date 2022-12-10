@@ -69,6 +69,8 @@ try:
         distributed=DISTRIBUTED,
         num_nodes=num_nodes,
         rank=rank)
+    print("=====================================")
+    print("result.collector.data.rew: ", result.data.rew[0])
    
     #torch.save(policy.state_dict(), 'dqn.pth')
     #policy.eval()
