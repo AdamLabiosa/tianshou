@@ -71,7 +71,8 @@ try:
         num_nodes=num_nodes,
         rank=rank)
     print("=====================================")
-    pprint("pp result ", result)
+    pprint.pprint("pp result ", result)
+    print(f'Final reward: {result["rew"]}, length: {result["len"]}')
    
     print("result.collector.data.rew: ", result.data.rew[0])
    
