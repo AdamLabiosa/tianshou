@@ -252,6 +252,8 @@ class BaseTrainer(ABC):
             self.group_size = len(self.group_list)
             ## END INIT ##
 
+        self.start_time = time.time()
+
     def reset(self) -> None:
         """Initialize or reset the instance to yield a new iterator from zero."""
         self.is_run = False
@@ -318,7 +320,6 @@ class BaseTrainer(ABC):
             progress = DummyTqdm
 
         # perform n step_per_epoch
-        start_time = time.time()
         with progress(
             total=self.step_per_epoch, desc=f"Epoch #{self.epoch}", **tqdm_config
         ) as t:
@@ -354,15 +355,16 @@ class BaseTrainer(ABC):
 
                 # csv
                 if result["n/ep"] > 0:
+                    sec_elapsed = time.time()-self.start_time
                     save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}.csv")
                     is_new = not os.path.exists(save_path)
                     with open(save_path, "a+") as file:
                         if is_new:
-                            file.write("index,mean,std\n")
+                            file.write("sec_elapsed,index,mean,std\n")
                         for k, v in result.items():
                             if isinstance(v, np.ndarray):
                                 result[k] = v.tolist()
-                        lines = f"{t.n},{result['rew']},{result['rew_std']}\n"
+                        lines = f"{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
                         file.write(lines)
 
                 self.policy_update_fn(data, result)
