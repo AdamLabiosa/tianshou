@@ -30,7 +30,7 @@ def graph_plot(filename, moving_average=0,color=None,label=None):
     _index=[]
     _mean=[]
     _std=[]
-    filename = "file/"+filename
+    filename = "tianshou/file/"+filename
     df = pd.read_csv(filename)
     #df = pd.read_csv('trpo_Mlp.csv')
 
