@@ -64,15 +64,7 @@ try:
     _reward_mean = []
     _std= []
     _time =[]
-    train_collector.collect(n_step=5000, random=True)
 
-    policy.set_eps(0.1)
-    for i in range(int(1e6)):  # total step
-        collect_result = train_collector.collect(n_step=10)
-
-        # once if the collected episodes' mean returns reach the threshold,
-        # or every 1000 steps, we test it on test_collector
-    #for i in range(10):
     result = ts.trainer.offpolicy_trainer(
         policy, train_collector, test_collector,
         max_epoch=10, step_per_epoch=10, step_per_collect=10,
