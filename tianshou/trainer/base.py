@@ -232,7 +232,7 @@ class BaseTrainer(ABC):
 
         self.test_num = test_num
         self.line_idx = 0
-        self.output_dir = f"./outputs"
+        self.output_dir = f"./outputs_rank{rank}"
         os.makedirs(self.output_dir, exist_ok=True)
         print(f"saving to self.output_dir={self.output_dir}")
         # remove all files
