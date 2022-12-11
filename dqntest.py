@@ -6,7 +6,6 @@ import argparse
 
 DISTRIBUTED = True
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--num_nodes', type=int, default=4)
 parser.add_argument('--rank', type=int, default=0)

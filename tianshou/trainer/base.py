@@ -7,7 +7,7 @@ import numpy as np
 import tqdm
 import torch
 
-import os, json
+import os, json, glob
 
 from tianshou.data import AsyncCollector, Collector, ReplayBuffer
 from tianshou.policy import BasePolicy
@@ -232,6 +232,11 @@ class BaseTrainer(ABC):
         self.output_path = f"./outputs"
         os.makedirs(self.output_path, exist_ok=True)
         print(f"saving to self.output_path={self.output_path}")
+        # remove all files
+        rm_paths = glob.glob(os.path.join(self.output_path, "*"))
+        for p in rm_paths:
+            os.remove(p)
+            print(f"  removed: {p}")
 
         if self.distributed:
             ## INIT DIST ##
@@ -293,8 +298,6 @@ class BaseTrainer(ABC):
         self.iter_num += 1
 
         if self.iter_num > 1:
-
-                
             # else:
             # iterator exhaustion check
             if self.epoch > self.max_epoch:
@@ -334,20 +337,34 @@ class BaseTrainer(ABC):
                     result["n/st"] = int(self.gradient_step)
                     t.update()
                 
-                save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}_{t.n}.json")
-                with open(save_path, "w+") as file:
-                    sec_elapsed = time.time()-start_time
-                    for k, v in result.items():
-                        if isinstance(v, np.ndarray):
-                            result[k] = v.tolist()
-                    out = {
-                            "epoch": self.epoch, "iter_num": self.iter_num, "n": t.n,
-                            "sec_elapsed": sec_elapsed,
-                            "data": data,
-                            "result": result
-                    }
-                    json.dump(out, file, indent=4)
-                    
+                # json
+                # save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}_{t.n}.json")
+                # with open(save_path, "w+") as file:
+                #     sec_elapsed = time.time()-start_time
+                #     for k, v in result.items():
+                #         if isinstance(v, np.ndarray):
+                #             result[k] = v.tolist()
+                #     out = {
+                #             "epoch": self.epoch, "iter_num": self.iter_num, "n": t.n,
+                #             "sec_elapsed": sec_elapsed,
+                #             "data": data,
+                #             "result": result
+                #     }
+                #     json.dump(out, file, indent=4)
+
+                # csv
+                if result["n/ep"] > 0:
+                    save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}.csv")
+                    is_new = not os.path.exists(save_path)
+                    with open(save_path, "a+") as file:
+                        if is_new:
+                            file.write("index,mean,std\n")
+                        for k, v in result.items():
+                            if isinstance(v, np.ndarray):
+                                result[k] = v.tolist()
+                        lines = f"{t.n},{result['rew']},{result['rew_std']}\n"
+                        file.write(lines)
+
                 self.policy_update_fn(data, result)
                 t.set_postfix(**data)
 
