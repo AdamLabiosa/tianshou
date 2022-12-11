@@ -65,7 +65,7 @@ try:
     _std= []
     _time =[]
 
-    for i in range(50):
+    for i in range(30):
 
         result = ts.trainer.offpolicy_trainer(
             policy, train_collector, test_collector,
