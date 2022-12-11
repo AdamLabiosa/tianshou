@@ -30,14 +30,14 @@ def graph_plot(filename, moving_average=0,color=None,label=None):
     _index=[]
     _mean=[]
     _std=[]
-    filename = "outputs/"+filename
+    filename = "file/"+filename
     df = pd.read_csv(filename)
     #df = pd.read_csv('trpo_Mlp.csv')
 
     _index=df['index'].to_numpy()
     _mean=df['mean'].to_numpy()
     _std=df['std'].to_numpy()
-    _std=_std*1.96
+    _std=_std*6
 
     #plt.errorbar(_index, _mean, yerr=_std)
     if moving_average==0:
@@ -61,7 +61,8 @@ if __name__ == "__main__":
     #graph_plot('ppo_Mlp.csv', moving_average=5, color='b',label='ppo')
     #graph_plot('sac_Mlp.csv', moving_average=5, color='y',label='sac')
     #graph_plot('trpo_Mlp.csv', moving_average=5, color='r',label='trpo')
-    graph_plot('1_1.csv', moving_average=5, color='m',label='DQN')
+    graph_plot('single_result_.csv', moving_average=5, color='r',label='Single')
+    graph_plot('multi_result_.csv', moving_average=5, color='b',label='multi')
 
     #df = pd.read_csv("trpo_Mlp.csv", header=None)
     #df = pd.read_csv('trpo_Mlp.csv', header=None)
