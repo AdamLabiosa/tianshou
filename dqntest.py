@@ -56,6 +56,7 @@ policy = ts.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3,
 train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuffer(20000, 10), exploration_noise=True, )
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
+use_this = True
 try:
     result = ts.trainer.offpolicy_trainer(
         test_num,
@@ -73,5 +74,18 @@ except Exception as e:
     print()
     print("Another process has finished training, exiting...")
     exit()
+    use_this = False
+
+if not use_this:
+    # remove current outputs since we won't use them
+    output_dir = f"./outputs_rank{rank}"
+    rm_paths = glob.glob(os.path.join(output_dir, "*"))
+    for p in rm_paths:
+        ftest_num = int(os.path.basename(p).split("_")[0])
+        if ftest_num == test_num:
+            os.remove(p)
+            print("  >> removing redundant data:", p)
 
 print(f'Finished training! Use {result["duration"]}')
+print()
+print()
