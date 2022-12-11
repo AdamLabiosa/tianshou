@@ -72,36 +72,25 @@ try:
 
         # once if the collected episodes' mean returns reach the threshold,
         # or every 1000 steps, we test it on test_collector
-        if collect_result['rews'].mean() >= env.spec.reward_threshold or i % 1000 == 0:
-            policy.set_eps(0.05)
-            result = test_collector.collect(n_episode=100)
-            _reward.append(result['rews'])
-            _reward_mean.append(result['rews'].mean())
-            if result['rews'].mean() >= env.spec.reward_threshold:
-                print(f'Finished training! Test mean returns: {result["rews"].mean()}')
-                break
-            else:
-                # back to training eps
-                policy.set_eps(0.1)
+    for i in range(10):
+        result = ts.trainer.offpolicy_trainer(
+            policy, train_collector, test_collector,
+            max_epoch=10, step_per_epoch=10, step_per_collect=10,
+            update_per_step=0.1, episode_per_test=100, batch_size=64,
+            train_fn=lambda epoch, env_step: policy.set_eps(0.1),
+            test_fn=lambda epoch, env_step: policy.set_eps(0.05),
+            stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
+            logger=logger, 
+            distributed=DISTRIBUTED,
+            num_nodes=num_nodes,
+            rank=rank)
+        print("=====================================")
+        print("completed!-",i)
+        _reward.append(result["best_reward"])
+    torch.save(policy.state_dict(), 'dqn.pth')
+    policy.load_state_dict(torch.load('dqn.pth'))
+    #pprint.pprint(result)
 
-        # train policy with a sampled batch data from buffer
-        losses = policy.update(64, train_collector.buffer)
-    # result = ts.trainer.offpolicy_trainer(
-    #     policy, train_collector, test_collector,
-    #     max_epoch=10, step_per_epoch=10000, step_per_collect=10,
-    #     update_per_step=0.1, episode_per_test=100, batch_size=64,
-    #     train_fn=lambda epoch, env_step: policy.set_eps(0.1),
-    #     test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-    #     stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
-    #     logger=logger, 
-    #     distributed=DISTRIBUTED,
-    #     num_nodes=num_nodes,
-    #     rank=rank)
-    print("=====================================")
-    print("completed!")
-    pprint.pprint(result)
-    #torch.save(policy.state_dict(), 'dqn.pth')
-    #policy.load_state_dict(torch.load('dqn.pth'))
 
 
     
