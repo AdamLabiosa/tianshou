@@ -61,19 +61,42 @@ test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 try:
     print("hoooooooooooooooo")
     _reward = []
+    _reward_mean = []
     _std= []
     _time =[]
-    result = ts.trainer.offpolicy_trainer(
-        policy, train_collector, test_collector,
-        max_epoch=10, step_per_epoch=10000, step_per_collect=10,
-        update_per_step=0.1, episode_per_test=100, batch_size=64,
-        train_fn=lambda epoch, env_step: policy.set_eps(0.1),
-        test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
-        logger=logger, 
-        distributed=DISTRIBUTED,
-        num_nodes=num_nodes,
-        rank=rank)
+    train_collector.collect(n_step=5000, random=True)
+
+    policy.set_eps(0.1)
+    for i in range(int(1e6)):  # total step
+        collect_result = train_collector.collect(n_step=10)
+
+        # once if the collected episodes' mean returns reach the threshold,
+        # or every 1000 steps, we test it on test_collector
+        if collect_result['rews'].mean() >= env.spec.reward_threshold or i % 1000 == 0:
+            policy.set_eps(0.05)
+            result = test_collector.collect(n_episode=100)
+            _reward.append(result['rews'])
+            _reward_mean.append(result['rews'].mean())
+            if result['rews'].mean() >= env.spec.reward_threshold:
+                print(f'Finished training! Test mean returns: {result["rews"].mean()}')
+                break
+            else:
+                # back to training eps
+                policy.set_eps(0.1)
+
+        # train policy with a sampled batch data from buffer
+        losses = policy.update(64, train_collector.buffer)
+    # result = ts.trainer.offpolicy_trainer(
+    #     policy, train_collector, test_collector,
+    #     max_epoch=10, step_per_epoch=10000, step_per_collect=10,
+    #     update_per_step=0.1, episode_per_test=100, batch_size=64,
+    #     train_fn=lambda epoch, env_step: policy.set_eps(0.1),
+    #     test_fn=lambda epoch, env_step: policy.set_eps(0.05),
+    #     stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
+    #     logger=logger, 
+    #     distributed=DISTRIBUTED,
+    #     num_nodes=num_nodes,
+    #     rank=rank)
     print("=====================================")
     print("completed!")
     pprint.pprint(result)
@@ -88,14 +111,13 @@ except Exception as e:
     print("Another process has finished training, exiting...")
     exit()
 
-policy.eval()
-policy.set_eps(0.05)
-collector = ts.data.Collector(policy, env, exploration_noise=True)
-collector.collect(n_episode=1, render=1 / 35)
+for i in _reward:
+    print(i)
+
+print("reward mean")
+# policy.eval()
+# policy.set_eps(0.05)
+# collector = ts.data.Collector(policy, env, exploration_noise=True)
+# collector.collect(n_episode=1, render=1 / 35)
 
 
-pprint.pprint(result)
-for i in range(100):
-    print(result["best_reward"][i])
-    print(result["train_speed"][i])
-    print(result["duration"][i])
