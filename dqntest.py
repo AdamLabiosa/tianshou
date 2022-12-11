@@ -59,7 +59,7 @@ train_collector = ts.data.Collector(policy, train_envs, ts.data.VectorReplayBuff
 test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
 try:
-    print("hoooooooooooooooo")
+    print("hi there")
     _reward = []
     _reward_mean = []
     _std= []
@@ -72,23 +72,23 @@ try:
 
         # once if the collected episodes' mean returns reach the threshold,
         # or every 1000 steps, we test it on test_collector
-    for i in range(10):
-        result = ts.trainer.offpolicy_trainer(
-            policy, train_collector, test_collector,
-            max_epoch=10, step_per_epoch=10, step_per_collect=10,
-            update_per_step=0.1, episode_per_test=100, batch_size=64,
-            train_fn=lambda epoch, env_step: policy.set_eps(0.1),
-            test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-            stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
-            logger=logger, 
-            distributed=DISTRIBUTED,
-            num_nodes=num_nodes,
-            rank=rank)
-        print("=====================================")
-        print("completed!-",i)
-        _reward.append(result["best_reward"])
+    #for i in range(10):
+    result = ts.trainer.offpolicy_trainer(
+        policy, train_collector, test_collector,
+        max_epoch=10, step_per_epoch=10, step_per_collect=10,
+        update_per_step=0.1, episode_per_test=100, batch_size=64,
+        train_fn=lambda epoch, env_step: policy.set_eps(0.1),
+        test_fn=lambda epoch, env_step: policy.set_eps(0.05),
+        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
+        logger=logger, 
+        distributed=DISTRIBUTED,
+        num_nodes=num_nodes,
+        rank=rank)
+    print("=====================================")
+    #print("completed!-",i)
+    _reward.append(result["best_reward"])
     torch.save(policy.state_dict(), 'dqn.pth')
-    policy.load_state_dict(torch.load('dqn.pth'))
+    #policy.load_state_dict(torch.load('dqn.pth'))
     #pprint.pprint(result)
 
 
@@ -100,10 +100,11 @@ except Exception as e:
     print("Another process has finished training, exiting...")
     exit()
 
+print("reward mean")
 for i in _reward:
     print(i)
 
-print("reward mean")
+print("done!!")
 # policy.eval()
 # policy.set_eps(0.05)
 # collector = ts.data.Collector(policy, env, exploration_noise=True)
