@@ -1,6 +1,6 @@
 #!/bin/bash
 clear;
-rm -rf outputs_rank{$1}
+rm -rf outputs
 
 for i in {1..3}
 do
