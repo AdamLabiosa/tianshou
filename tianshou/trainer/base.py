@@ -253,6 +253,7 @@ class BaseTrainer(ABC):
             ## END INIT ##
 
         self.start_time = time.time()
+        self.file_export = None
 
     def reset(self) -> None:
         """Initialize or reset the instance to yield a new iterator from zero."""
@@ -358,14 +359,16 @@ class BaseTrainer(ABC):
                     sec_elapsed = time.time()-self.start_time
                     save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}.csv")
                     is_new = not os.path.exists(save_path)
-                    with open(save_path, "a+") as file:
-                        if is_new:
-                            file.write("sec_elapsed,index,mean,std\n")
-                        for k, v in result.items():
-                            if isinstance(v, np.ndarray):
-                                result[k] = v.tolist()
-                        lines = f"{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
-                        file.write(lines)
+                    if self.file_export is None:
+                        self.file_export = open(save_path, "a+")
+                        print("file opened to export:", save_path)
+                    if is_new:
+                        self.file_export.write("sec_elapsed,index,mean,std\n")
+                    for k, v in result.items():
+                        if isinstance(v, np.ndarray):
+                            result[k] = v.tolist()
+                    lines = f"{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
+                    self.file_export.write(lines)
 
                 self.policy_update_fn(data, result)
                 t.set_postfix(**data)
