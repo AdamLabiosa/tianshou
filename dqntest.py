@@ -65,12 +65,12 @@ try:
     _std= []
     _time =[]
 
-    for i in range(100):
+    for i in range(50):
 
         result = ts.trainer.offpolicy_trainer(
             policy, train_collector, test_collector,
             max_epoch=10, step_per_epoch=5, step_per_collect=10,
-            update_per_step=0.1, episode_per_test=5, batch_size=64,
+            update_per_step=0.1, episode_per_test=100, batch_size=64,
             train_fn=lambda epoch, env_step: policy.set_eps(0.1),
             test_fn=lambda epoch, env_step: policy.set_eps(0.05),
             stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
@@ -93,9 +93,8 @@ except Exception as e:
     print("Another process has finished training, exiting...")
     exit()
 
-print("reward mean")
-for i in _reward:
-    print(i)
+print("reward : ", _reward)
+
 
 print("done!!")
 # policy.eval()
