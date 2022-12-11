@@ -232,7 +232,7 @@ class BaseTrainer(ABC):
 
         self.test_num = test_num
         self.line_idx = 0
-        self.output_dir = f"./outputs_rank{rank}"
+        self.output_dir = f"./outputs"
         os.makedirs(self.output_dir, exist_ok=True)
         print(f"saving to self.output_dir={self.output_dir}")
 
@@ -355,7 +355,7 @@ class BaseTrainer(ABC):
                 # csv
                 if result["n/ep"] > 0:
                     sec_elapsed = time.time()-self.start_time
-                    save_path = os.path.join(self.output_dir, f"{self.test_num}_{self.epoch}_{self.iter_num}.csv")
+                    save_path = os.path.join(self.output_dir, f"{self.test_num}_{self.rank}_{self.epoch}_{self.iter_num}.csv")
                     is_new = not os.path.exists(save_path)
                     if self.file_export is None:
                         self.file_export = open(save_path, "a+")

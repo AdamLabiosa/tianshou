@@ -80,7 +80,7 @@ except Exception as e:
 print(">>> use_this =", use_this)
 if not use_this:
     # remove current outputs since we won't use them
-    output_dir = f"./outputs_rank{rank}"
+    output_dir = f"./outputs"
     rm_paths = glob.glob(os.path.join(output_dir, "*"))
     print("rm_paths:", rm_paths)
     for p in rm_paths:
