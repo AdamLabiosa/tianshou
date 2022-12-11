@@ -70,11 +70,11 @@ try:
         num_nodes=num_nodes,
         rank=rank)
 except Exception as e:
+    use_this = False
     print(e)
     print()
     print("Another process has finished training, exiting...")
     exit()
-    use_this = False
 
 if not use_this:
     # remove current outputs since we won't use them

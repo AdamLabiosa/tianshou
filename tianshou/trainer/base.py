@@ -235,11 +235,6 @@ class BaseTrainer(ABC):
         self.output_dir = f"./outputs_rank{rank}"
         os.makedirs(self.output_dir, exist_ok=True)
         print(f"saving to self.output_dir={self.output_dir}")
-        # remove all files
-        rm_paths = glob.glob(os.path.join(self.output_dir, "*"))
-        for p in rm_paths:
-            os.remove(p)
-            print(f"  removed: {p}")
 
         if self.distributed:
             ## INIT DIST ##
