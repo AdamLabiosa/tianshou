@@ -1,6 +1,6 @@
 #!/bin/bash
 clear;
-rm -rf outputs_single
+rm -rf outputs
 
 for i in {1..10}
 do
