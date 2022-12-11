@@ -74,9 +74,9 @@ except Exception as e:
     print(e)
     print()
     print("Another process has finished training, exiting...")
-    exit()
+    # exit()
 
-print(">>> use_this=", use_this)
+print(">>> use_this =", use_this)
 if not use_this:
     # remove current outputs since we won't use them
     output_dir = f"./outputs_rank{rank}"
@@ -88,6 +88,6 @@ if not use_this:
             os.remove(p)
             print("  >> removing redundant data:", p)
 
-print(f'Finished training! Use {result["duration"]}')
+# print(f'Finished training! Use {result["duration"]}')
 print()
 print()
