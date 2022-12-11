@@ -137,6 +137,7 @@ class BaseTrainer(ABC):
 
     def __init__(
         self,
+        test_num: int,
         learning_type: str,
         policy: BasePolicy,
         max_epoch: int,
@@ -166,7 +167,7 @@ class BaseTrainer(ABC):
         distributed: bool = False,
         master_ip: str = '10.10.1.1',
         num_nodes: int = 1,
-        rank: int = -1
+        rank: int = -1,
     ):
         if save_fn:
             deprecation(
@@ -229,11 +230,13 @@ class BaseTrainer(ABC):
         self.num_nodes = num_nodes
         self.rank = rank
 
-        self.output_path = f"./outputs"
-        os.makedirs(self.output_path, exist_ok=True)
-        print(f"saving to self.output_path={self.output_path}")
+        self.test_num = test_num
+        self.line_idx = 0
+        self.output_dir = f"./outputs"
+        os.makedirs(self.output_dir, exist_ok=True)
+        print(f"saving to self.output_dir={self.output_dir}")
         # remove all files
-        rm_paths = glob.glob(os.path.join(self.output_path, "*"))
+        rm_paths = glob.glob(os.path.join(self.output_dir, "*"))
         for p in rm_paths:
             os.remove(p)
             print(f"  removed: {p}")
@@ -340,7 +343,7 @@ class BaseTrainer(ABC):
                     t.update()
                 
                 # json
-                # save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}_{t.n}.json")
+                # save_path = os.path.join(self.output_dir, f"{self.epoch}_{self.iter_num}_{t.n}.json")
                 # with open(save_path, "w+") as file:
                 #     sec_elapsed = time.time()-start_time
                 #     for k, v in result.items():
@@ -357,18 +360,19 @@ class BaseTrainer(ABC):
                 # csv
                 if result["n/ep"] > 0:
                     sec_elapsed = time.time()-self.start_time
-                    save_path = os.path.join(self.output_path, f"{self.epoch}_{self.iter_num}.csv")
+                    save_path = os.path.join(self.output_dir, f"{self.test_num}_{self.epoch}_{self.iter_num}.csv")
                     is_new = not os.path.exists(save_path)
                     if self.file_export is None:
                         self.file_export = open(save_path, "a+")
                         print("file opened to export:", save_path)
                     if is_new:
-                        self.file_export.write("sec_elapsed,index,mean,std\n")
+                        self.file_export.write("index,sec_elapsed,n,mean,std\n")
                     for k, v in result.items():
                         if isinstance(v, np.ndarray):
                             result[k] = v.tolist()
-                    lines = f"{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
+                    lines = f"{self.line_idx},{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
                     self.file_export.write(lines)
+                    self.line_idx += 1
 
                 self.policy_update_fn(data, result)
                 t.set_postfix(**data)

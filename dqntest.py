@@ -7,14 +7,19 @@ import argparse
 DISTRIBUTED = True
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--test-num', type=int)
 parser.add_argument('--num_nodes', type=int, default=4)
 parser.add_argument('--rank', type=int, default=0)
 parser.add_argument('--masterip', type=str, default='10.10.1.1')
 
 args = parser.parse_args()
+test_num = args.test_num
 num_nodes = args.num_nodes
 rank = args.rank
 masterip = args.masterip
+print("args:")
+print(args)
+print()
 
 env = gym.make('CartPole-v0')
 
@@ -53,6 +58,7 @@ test_collector = ts.data.Collector(policy, test_envs, exploration_noise=True)
 
 try:
     result = ts.trainer.offpolicy_trainer(
+        test_num,
         policy, train_collector, test_collector,
         max_epoch=10, step_per_epoch=10000, step_per_collect=10,
         update_per_step=0.1, episode_per_test=100, batch_size=64,
