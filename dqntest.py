@@ -65,37 +65,24 @@ try:
     _std= []
     _time =[]
 
-    result = ts.trainer.offpolicy_trainer(
-        policy, train_collector, test_collector,
-        max_epoch=10, step_per_epoch=5, step_per_collect=10,
-        update_per_step=0.1, episode_per_test=5, batch_size=64,
-        train_fn=lambda epoch, env_step: policy.set_eps(0.1),
-        test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
-        logger=logger, 
-        distributed=DISTRIBUTED,
-        num_nodes=num_nodes,
-        rank=rank)
-    print("=====================================")
-    #print("completed!-",i)
-    _reward.append(result["best_reward"])
-    torch.save(policy.state_dict(), 'dqn.pth')
-    policy.load_state_dict(torch.load('dqn.pth'))
+    for i in range(100):
 
-    result = ts.trainer.offpolicy_trainer(
-        policy, train_collector, test_collector,
-        max_epoch=10, step_per_epoch=5, step_per_collect=10,
-        update_per_step=0.1, episode_per_test=5, batch_size=64,
-        train_fn=lambda epoch, env_step: policy.set_eps(0.1),
-        test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
-        logger=logger, 
-        distributed=DISTRIBUTED,
-        num_nodes=num_nodes,
-        rank=rank)
-    print("=====================================")
-    _reward.append(result["best_reward"])
-    #pprint.pprint(result)
+        result = ts.trainer.offpolicy_trainer(
+            policy, train_collector, test_collector,
+            max_epoch=10, step_per_epoch=5, step_per_collect=10,
+            update_per_step=0.1, episode_per_test=5, batch_size=64,
+            train_fn=lambda epoch, env_step: policy.set_eps(0.1),
+            test_fn=lambda epoch, env_step: policy.set_eps(0.05),
+            stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold,
+            logger=logger, 
+            distributed=DISTRIBUTED,
+            num_nodes=num_nodes,
+            rank=rank)
+        print("=====================================")
+        print("completed!-",i)
+        _reward.append(result["best_reward"])
+        torch.save(policy.state_dict(), 'dqn.pth')
+        policy.load_state_dict(torch.load('dqn.pth'))
 
 
 
