@@ -76,10 +76,12 @@ except Exception as e:
     print("Another process has finished training, exiting...")
     exit()
 
+print(">>> use_this=", use_this)
 if not use_this:
     # remove current outputs since we won't use them
     output_dir = f"./outputs_rank{rank}"
     rm_paths = glob.glob(os.path.join(output_dir, "*"))
+    print("rm_paths:", rm_paths)
     for p in rm_paths:
         ftest_num = int(os.path.basename(p).split("_")[0])
         if ftest_num == test_num:
