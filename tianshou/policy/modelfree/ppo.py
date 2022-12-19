@@ -114,6 +114,7 @@ class PPOPolicy(A2CPolicy):
 
             self.group = distribute.new_group(self.group_list)
             self.group_size = len(self.group_list)
+            self.sync_iter = 0
 
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
@@ -137,7 +138,6 @@ class PPOPolicy(A2CPolicy):
         for step in range(repeat):
             if self._recompute_adv and step > 0:
                 batch = self._compute_returns(batch, self._buffer, self._indices)
-            sync = 0
             for minibatch in batch.split(batch_size, merge_last=True):
                 # calculate loss for actor
                 dist = self(minibatch).dist
@@ -182,13 +182,13 @@ class PPOPolicy(A2CPolicy):
                 if self.distr:
                     # distribute.barrier()
                     # every 20 iterations, sync the gradients
-                    if sync % 2000 == 0:
+                    if self.sync_iter % 20 == 0:
                         print('syncing gradients')
                         # sync gradients
                         for param in self._actor_critic.parameters():
                             distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
                             param.grad.data /= distribute.get_world_size()
-                    sync += 1
+                    self.sync_iter += 1
 
 
                 self.optim.step()
