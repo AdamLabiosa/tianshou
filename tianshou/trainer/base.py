@@ -137,7 +137,6 @@ class BaseTrainer(ABC):
 
     def __init__(
         self,
-        test_num: int,
         learning_type: str,
         policy: BasePolicy,
         max_epoch: int,
