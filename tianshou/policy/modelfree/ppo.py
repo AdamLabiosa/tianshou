@@ -177,15 +177,15 @@ class PPOPolicy(A2CPolicy):
                         self._actor_critic.parameters(), max_norm=self._grad_norm
                     )
                     
-                # If distributed
-                if self.distr:
-                    # distribute.barrier()
-                    # every 20 iterations, sync the gradients
-                    if step % 100 == 0:
-                        # sync gradients
-                        for param in self._actor_critic.parameters():
-                            distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
-                            param.grad.data /= distribute.get_world_size()
+                # # If distributed
+                # if self.distr:
+                #     # distribute.barrier()
+                #     # every 20 iterations, sync the gradients
+                #     if step % 100 == 0:
+                #         # sync gradients
+                #         for param in self._actor_critic.parameters():
+                #             distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
+                #             param.grad.data /= distribute.get_world_size()
 
 
                 self.optim.step()
