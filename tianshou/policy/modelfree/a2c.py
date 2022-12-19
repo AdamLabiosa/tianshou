@@ -99,6 +99,7 @@ class A2CPolicy(PGPolicy):
 
             self.group = distribute.new_group(self.group_list)
             self.group_size = len(self.group_list)
+            self.sync_iter = 0
 
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
@@ -168,6 +169,18 @@ class A2CPolicy(PGPolicy):
                     nn.utils.clip_grad_norm_(
                         self._actor_critic.parameters(), max_norm=self._grad_norm
                     )
+
+                 # # If distributed
+                if self.distr:
+                    # distribute.barrier()
+                    # every 20 iterations, sync the gradients
+                    if self.sync_iter % 200 == 0:
+                        # sync gradients
+                        for param in self._actor_critic.parameters():
+                            distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
+                            param.grad.data /= distribute.get_world_size()
+                    self.sync_iter += 1
+                
                 self.optim.step()
                 actor_losses.append(actor_loss.item())
                 vf_losses.append(vf_loss.item())

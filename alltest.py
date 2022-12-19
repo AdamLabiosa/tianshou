@@ -5,6 +5,7 @@ import torch
 from tianshou.data import Collector, VectorReplayBuffer
 from tianshou.env import DummyVectorEnv
 from tianshou.policy import PPOPolicy
+from tianshou.policy import A2CPolicy
 from tianshou.trainer import onpolicy_trainer
 from tianshou.utils.net.common import ActorCritic, Net
 from tianshou.utils.net.discrete import Actor, Critic
@@ -41,9 +42,12 @@ critic = Critic(net, device=device).to(device)
 actor_critic = ActorCritic(actor, critic)
 optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
 
-# PPO policy
+
 dist = torch.distributions.Categorical
-policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank)
+# a2c policy
+policy = A2CPolicy(actor_critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
+# PPO
+# policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank)
         
           
 # collector
