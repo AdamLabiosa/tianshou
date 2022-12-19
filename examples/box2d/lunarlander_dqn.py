@@ -136,7 +136,7 @@ def test_dqn(args=get_args()):
         args.step_per_epoch,
         args.step_per_collect,
         args.test_num,
-        args.batch_size,
+        batch_size=args.batch_size,
         update_per_step=args.update_per_step,
         stop_fn=stop_fn,
         train_fn=train_fn,
