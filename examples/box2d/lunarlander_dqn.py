@@ -27,8 +27,8 @@ def get_args():
     parser.add_argument('--gamma', type=float, default=0.99)
     parser.add_argument('--n-step', type=int, default=4)
     parser.add_argument('--target-update-freq', type=int, default=500)
-    parser.add_argument('--epoch', type=int, default=10)
-    parser.add_argument('--step-per-epoch', type=int, default=80000)
+    parser.add_argument('--epoch', type=int, default=5)
+    parser.add_argument('--step-per-epoch', type=int, default=20000)
     parser.add_argument('--step-per-collect', type=int, default=16)
     parser.add_argument('--update-per-step', type=float, default=0.0625)
     parser.add_argument('--batch-size', type=int, default=128)
@@ -127,16 +127,16 @@ def test_dqn(args=get_args()):
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
 
-    # trainer
+   # trainer
     result = offpolicy_trainer(
-        policy=policy,
-        train_collector=train_collector,
-        test_collector=test_collector,
-        max_epoch=args.epoch,
-        step_per_epoch=args.step_per_epoch,
-        step_per_collect=args.step_per_collect,
-        episode_per_test=args.test_num,
-        batch_size=args.batch_size,
+        policy,
+        train_collector,
+        test_collector,
+        args.epoch,
+        args.step_per_epoch,
+        args.step_per_collect,
+        args.test_num,
+        args.batch_size,
         update_per_step=args.update_per_step,
         stop_fn=stop_fn,
         train_fn=train_fn,
