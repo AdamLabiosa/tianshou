@@ -6,7 +6,7 @@ from tianshou.data import Collector, VectorReplayBuffer
 from tianshou.env import DummyVectorEnv
 from tianshou.policy import PPOPolicy
 from tianshou.policy import A2CPolicy
-from tianshou.policy import BranchingDQNPolicy
+from tianshou.policy import DDPGPolicy
 from tianshou.trainer import onpolicy_trainer
 from tianshou.utils.net.common import ActorCritic, Net
 from tianshou.utils.net.discrete import Actor, Critic
@@ -37,20 +37,17 @@ train_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(20)]
 test_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(10)])
 
 # model & optimizer
-# branching dqn policy
 net = Net(env.observation_space.shape, hidden_sizes=[64, 64], device=device)
-policy = BranchingDQNPolicy(net, env.action_space.n, device=device).to(device)
-optim = torch.optim.Adam(policy.parameters(), lr=0.0003)
-
-# model & optimizer
-# net = Net(env.observation_space.shape, hidden_sizes=[64, 64], device=device)
-# actor = Actor(net, env.action_space.n, device=device).to(device)
-# critic = Critic(net, device=device).to(device)
-# actor_critic = ActorCritic(actor, critic)
-# optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
+actor = Actor(net, env.action_space.n, device=device).to(device)
+critic = Critic(net, device=device).to(device)
+actor_critic = ActorCritic(actor, critic)
+optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
 
 
-# dist = torch.distributions.Categorical
+dist = torch.distributions.Categorical
+# DDPGPolicy
+policy = DDPGPolicy(actor=actor, actor_optim=optim, critic=critic, critic_optim=optim, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
+
 # a2c policy
 # policy = A2CPolicy(actor=actor, critic=critic, optim=optim, dist_fn=dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
 # PPO

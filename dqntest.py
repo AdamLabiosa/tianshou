@@ -9,7 +9,6 @@ from tianshou.policy import BranchingDQNPolicy
 from tianshou.utils.net.common import BranchingNet
 
 # DISTRIBUTED = True
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--test-num', type=int)
 parser.add_argument('--dist', type=int)
@@ -85,5 +84,5 @@ except Exception as e:
     print(e)
     print()
     print("Another process has finished training, exiting...")
-    # exit()
+    exit()
 

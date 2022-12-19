@@ -1,7 +1,7 @@
 Distributed:
     model free
         a2c
-        bdq
+        bdq - Similar to DQN, didn't run performance tests only ran functionality test.
         c51
         ddpg
         dqn
