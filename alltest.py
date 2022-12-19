@@ -15,13 +15,13 @@ warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test-num', type=int)
-parser.add_argument('--dist', type=bool)
+parser.add_argument('--dist', type=int)
 parser.add_argument('--num_nodes', type=int, default=4)
 parser.add_argument('--rank', type=int, default=0)
 parser.add_argument('--masterip', type=str, default='10.10.1.1')
 
 args = parser.parse_args()
-DISTRIBUTED = args.dist
+DISTRIBUTED = bool(args.dist)
 test_num = args.test_num
 num_nodes = args.num_nodes
 rank = args.rank
@@ -55,6 +55,7 @@ result = onpolicy_trainer(
     policy,
     train_collector,
     test_collector,
+    test_num=0,
     max_epoch=10,
     step_per_epoch=50000,
     repeat_per_collect=10,
