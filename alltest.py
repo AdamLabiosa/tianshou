@@ -46,8 +46,22 @@ optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
 
 dist = torch.distributions.Categorical
 # DDPGPolicy
-policy = DDPGPolicy(actor=actor, actor_optim=optim, critic=critic, critic_optim=optim, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
-
+# actor: Optional[torch.nn.Module],
+#         actor_optim: Optional[torch.optim.Optimizer],
+#         critic: Optional[torch.nn.Module],
+#         critic_optim: Optional[torch.optim.Optimizer],
+#         tau: float = 0.005,
+#         gamma: float = 0.99,
+#         exploration_noise: Optional[BaseNoise] = GaussianNoise(sigma=0.1),
+#         reward_normalization: bool = False,
+#         estimation_step: int = 1,
+#         action_scaling: bool = True,
+#         action_bound_method: str = "clip",
+#         distr: bool = False,
+#         num_nodes: int = 4,
+#         rank: int = 0, 
+#         masterip: str = '10.10.1.1',
+policy = DDPGPolicy(actor, optim, critic, optim, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
 # a2c policy
 # policy = A2CPolicy(actor=actor, critic=critic, optim=optim, dist_fn=dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
 # PPO
