@@ -5,6 +5,9 @@ from torch import nn
 import argparse
 import glob, os
 
+from tianshou.policy import BranchingDQNPolicy
+from tianshou.utils.net.common import BranchingNet
+
 # DISTRIBUTED = True
 
 parser = argparse.ArgumentParser()
@@ -53,9 +56,7 @@ state_shape = env.observation_space.shape or env.observation_space.n
 action_shape = env.action_space.shape or env.action_space.n
 # Create branching network with 2 branches
 
-net = ts.utils.net.common.BranchingNet(state_shape, action_shape, 2, 128, 128, 128)
-
-# net = Net(state_shape, action_shape)
+net = BranchingNet(state_shape, action_shape, 2, common_hidden_sizes=[128, 128, 128], branch_hidden_sizes=[128, 128, 128], branch_output_sizes=[128, 128, 128], branch_activations=[nn.ReLU(inplace=True), nn.ReLU(inplace=True), nn.ReLU(inplace=True)], common_activation=nn.ReLU(inplace=True), common_output_size=128, common_output_activation=nn.ReLU(inplace=True), branch_output_activations=[nn.ReLU(inplace=True), nn.ReLU(inplace=True), nn.ReLU(inplace=True)]
 optim = torch.optim.Adam(net.parameters(), lr=1e-3)
 
 
