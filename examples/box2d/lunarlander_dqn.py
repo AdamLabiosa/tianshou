@@ -129,9 +129,9 @@ def test_dqn(args=get_args()):
 
     # trainer
     result = offpolicy_trainer(
-        policy,
-        train_collector,
-        test_collector,
+        policy=policy,
+        train_collector=train_collector,
+        test_collector=test_collector,
         max_epoch=args.epoch,
         step_per_epoch=args.step_per_epoch,
         step_per_collect=args.step_per_collect,
