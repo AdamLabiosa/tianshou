@@ -7,6 +7,11 @@ import torch.nn.functional as F
 from tianshou.data import Batch, to_numpy
 from tianshou.policy import QRDQNPolicy
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class IQNPolicy(QRDQNPolicy):
     """Implementation of Implicit Quantile Network. arXiv:1806.06923.
@@ -46,6 +51,10 @@ class IQNPolicy(QRDQNPolicy):
         estimation_step: int = 1,
         target_update_freq: int = 0,
         reward_normalization: bool = False,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -58,6 +67,24 @@ class IQNPolicy(QRDQNPolicy):
         self._sample_size = sample_size  # for policy eval
         self._online_sample_size = online_sample_size
         self._target_sample_size = target_sample_size
+
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6077".format(self.masterip)
+            print('initizaling distributed')
+            print('rank: ', self.rank)
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+            self.group_list = []
+            for group in range(0, self.num_nodes):
+                self.group_list.append(group)
+
+            self.group = distribute.new_group(self.group_list)
+            self.group_size = len(self.group_list)
 
     def forward(
         self,
@@ -106,6 +133,17 @@ class IQNPolicy(QRDQNPolicy):
         # ref: https://github.com/ku2482/fqf-iqn-qrdqn.pytorch/
         # blob/master/fqf_iqn_qrdqn/agent/qrdqn_agent.py L130
         batch.weight = dist_diff.detach().abs().sum(-1).mean(1)  # prio-buffer
+
+         # If distributed
+        if self.distr:
+            # distribute.barrier()
+            # every 20 iterations, sync the gradients
+            if self._iter % 20 == 0:
+                # sync gradients
+                for param in self.model.parameters():
+                    distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
+                    param.grad.data /= distribute.get_world_size()
+
         loss.backward()
         self.optim.step()
         self._iter += 1

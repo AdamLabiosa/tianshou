@@ -1,0 +1,34 @@
+Distributed:
+    model free
+        a2c
+        bdq
+        c51
+        ddpg
+        dqn
+        fqf
+        ppo
+        qrdqn
+    
+    model based:
+        icm
+
+Future work:
+    model free
+        discrete_sac
+        npg
+        reinforce (policy gradient/pg)
+        rainbow
+        redq
+        sac
+        td3
+        trpo
+    
+    model based:
+    psrl
+
+    imitation:
+    all (not technically RL)
+
+    multi agent:
+    only one policy here
+

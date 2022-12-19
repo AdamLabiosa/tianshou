@@ -9,6 +9,11 @@ from tianshou.data import Batch, ReplayBuffer, to_torch_as
 from tianshou.policy import PGPolicy
 from tianshou.utils.net.common import ActorCritic
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class A2CPolicy(PGPolicy):
     """Implementation of Synchronous Advantage Actor-Critic. arXiv:1602.01783.
@@ -61,6 +66,10 @@ class A2CPolicy(PGPolicy):
         max_grad_norm: Optional[float] = None,
         gae_lambda: float = 0.95,
         max_batchsize: int = 256,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any
     ) -> None:
         super().__init__(actor, optim, dist_fn, **kwargs)
@@ -72,6 +81,24 @@ class A2CPolicy(PGPolicy):
         self._grad_norm = max_grad_norm
         self._batch = max_batchsize
         self._actor_critic = ActorCritic(self.actor, self.critic)
+        
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6077".format(self.masterip)
+            print('initizaling distributed')
+            print('rank: ', self.rank)
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+            self.group_list = []
+            for group in range(0, self.num_nodes):
+                self.group_list.append(group)
+
+            self.group = distribute.new_group(self.group_list)
+            self.group_size = len(self.group_list)
 
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray

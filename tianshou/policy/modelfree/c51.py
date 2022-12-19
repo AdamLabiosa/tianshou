@@ -6,6 +6,11 @@ import torch
 from tianshou.data import Batch, ReplayBuffer
 from tianshou.policy import DQNPolicy
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class C51Policy(DQNPolicy):
     """Implementation of Categorical Deep Q-Network. arXiv:1707.06887.
@@ -45,6 +50,10 @@ class C51Policy(DQNPolicy):
         estimation_step: int = 1,
         target_update_freq: int = 0,
         reward_normalization: bool = False,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -61,6 +70,24 @@ class C51Policy(DQNPolicy):
             requires_grad=False,
         )
         self.delta_z = (v_max - v_min) / (num_atoms - 1)
+
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6077".format(self.masterip)
+            print('initizaling distributed')
+            print('rank: ', self.rank)
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+            self.group_list = []
+            for group in range(0, self.num_nodes):
+                self.group_list.append(group)
+
+            self.group = distribute.new_group(self.group_list)
+            self.group_size = len(self.group_list)
 
     def _target_q(self, buffer: ReplayBuffer, indices: np.ndarray) -> torch.Tensor:
         return self.support.repeat(len(indices), 1)  # shape: [bsz, num_atoms]
@@ -103,6 +130,18 @@ class C51Policy(DQNPolicy):
         # ref: https://github.com/Kaixhin/Rainbow/blob/master/agent.py L94-100
         batch.weight = cross_entropy.detach()  # prio-buffer
         loss.backward()
+
+         # If distributed
+        if self.distr:
+            # distribute.barrier()
+            # every 20 iterations, sync the gradients
+            if self._iter % 20 == 0:
+                # sync gradients
+                for param in self.model.parameters():
+                    distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
+                    param.grad.data /= distribute.get_world_size()
+
+
         self.optim.step()
         self._iter += 1
         return {"loss": loss.item()}

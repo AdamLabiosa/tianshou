@@ -8,6 +8,11 @@ from tianshou.data import Batch, ReplayBuffer, to_numpy, to_torch
 from tianshou.policy import BasePolicy
 from tianshou.utils.net.discrete import IntrinsicCuriosityModule
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class ICMPolicy(BasePolicy):
     """Implementation of Intrinsic Curiosity Module. arXiv:1705.05363.
@@ -34,6 +39,10 @@ class ICMPolicy(BasePolicy):
         lr_scale: float,
         reward_scale: float,
         forward_loss_weight: float,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -43,6 +52,24 @@ class ICMPolicy(BasePolicy):
         self.lr_scale = lr_scale
         self.reward_scale = reward_scale
         self.forward_loss_weight = forward_loss_weight
+
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6077".format(self.masterip)
+            print('initizaling distributed')
+            print('rank: ', self.rank)
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+            self.group_list = []
+            for group in range(0, self.num_nodes):
+                self.group_list.append(group)
+
+            self.group = distribute.new_group(self.group_list)
+            self.group_size = len(self.group_list)
 
     def train(self, mode: bool = True) -> "ICMPolicy":
         """Set the module in training mode."""
@@ -112,6 +139,17 @@ class ICMPolicy(BasePolicy):
             self.forward_loss_weight * forward_loss
         ) * self.lr_scale
         loss.backward()
+         # If distributed
+        if self.distr:
+            # distribute.barrier()
+            # every 20 iterations, sync the gradients
+            if self._iter % 20 == 0:
+                # sync gradients
+                for param in self.model.parameters():
+                    distribute.all_reduce(param.grad.data, op=distribute.ReduceOp.SUM)
+                    param.grad.data /= distribute.get_world_size()
+
+
         self.optim.step()
         res.update(
             {

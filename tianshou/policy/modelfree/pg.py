@@ -7,6 +7,11 @@ from tianshou.data import Batch, ReplayBuffer, to_torch, to_torch_as
 from tianshou.policy import BasePolicy
 from tianshou.utils import RunningMeanStd
 
+# Distriuted imports 
+import torch.distributed as distribute
+device = "cpu"
+torch.set_num_threads(4)
+
 
 class PGPolicy(BasePolicy):
     """Implementation of REINFORCE algorithm.
@@ -45,6 +50,10 @@ class PGPolicy(BasePolicy):
         action_scaling: bool = True,
         action_bound_method: str = "clip",
         deterministic_eval: bool = False,
+        distr: bool = False,
+        num_nodes: int = 4,
+        rank: int = 0, 
+        masterip: str = '10.10.1.1',
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -61,6 +70,24 @@ class PGPolicy(BasePolicy):
         self.ret_rms = RunningMeanStd()
         self._eps = 1e-8
         self._deterministic_eval = deterministic_eval
+
+        self.distr = distr
+        self.num_nodes = num_nodes
+        self.rank = rank
+        self.masterip = masterip
+        if self.distr:
+            ## INIT DIST ##
+            init_method = "tcp://{}:6077".format(self.masterip)
+            print('initizaling distributed')
+            print('rank: ', self.rank)
+            distribute.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+
+            self.group_list = []
+            for group in range(0, self.num_nodes):
+                self.group_list.append(group)
+
+            self.group = distribute.new_group(self.group_list)
+            self.group_size = len(self.group_list)
 
     def process_fn(
         self, batch: Batch, buffer: ReplayBuffer, indices: np.ndarray
