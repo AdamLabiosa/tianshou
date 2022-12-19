@@ -36,9 +36,12 @@ env = gym.make('MountainCarContinuous-v0')
 train_envs = DummyVectorEnv([lambda: gym.make('MountainCarContinuous-v0') for _ in range(20)])
 test_envs = DummyVectorEnv([lambda: gym.make('MountainCarContinuous-v0') for _ in range(10)])
 
+state_shape = env.observation_space.shape or env.observation_space.n
+action_shape = env.action_space.shape or env.action_space.n
+
 # model & optimizer
 net = Net(env.observation_space.shape, hidden_sizes=[64, 64], device=device)
-actor = Actor(net, env.action_space.n, device=device).to(device)
+actor = Actor(net, env.action_space.shape, device=device).to(device)
 critic = Critic(net, device=device).to(device)
 actor_critic = ActorCritic(actor, critic)
 optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
