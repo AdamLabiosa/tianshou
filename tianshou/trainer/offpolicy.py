@@ -67,7 +67,6 @@ class OffpolicyTrainer(BaseTrainer):
 
     def __init__(
         self,
-        test_num:int,
         policy: BasePolicy,
         train_collector: Collector,
         test_collector: Optional[Collector],
