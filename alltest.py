@@ -15,13 +15,13 @@ warnings.filterwarnings('ignore')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test-num', type=int)
-parser.add_argument('--dist', type=int)
+parser.add_argument('--dist', type=bool)
 parser.add_argument('--num_nodes', type=int, default=4)
 parser.add_argument('--rank', type=int, default=0)
 parser.add_argument('--masterip', type=str, default='10.10.1.1')
 
 args = parser.parse_args()
-DISTRIBUTED = bool(args.dist)
+DISTRIBUTED = args.dist
 test_num = args.test_num
 num_nodes = args.num_nodes
 rank = args.rank
@@ -43,7 +43,7 @@ optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
 
 # PPO policy
 dist = torch.distributions.Categorical
-policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=DISTRIBUTED, distr=True, num_nodes=4, rank=rank)
+policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank)
         
           
 # collector
