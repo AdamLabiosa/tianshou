@@ -146,13 +146,13 @@ def test_dqn(args=get_args()):
     if __name__ == '__main__':
         pprint.pprint(result)
         # Let's watch its performance!
-        policy.eval()
-        policy.set_eps(args.eps_test)
-        test_envs.seed(args.seed)
-        test_collector.reset()
-        result = test_collector.collect(n_episode=args.test_num, render=args.render)
-        rews, lens = result["rews"], result["lens"]
-        print(f"Final reward: {rews.mean()}, length: {lens.mean()}")
+        # policy.eval()
+        # policy.set_eps(args.eps_test)
+        # test_envs.seed(args.seed)
+        # test_collector.reset()
+        # result = test_collector.collect(n_episode=args.test_num, render=args.render)
+        # rews, lens = result["rews"], result["lens"]
+        # print(f"Final reward: {rews.mean()}, length: {lens.mean()}")
 
 
 if __name__ == '__main__':
