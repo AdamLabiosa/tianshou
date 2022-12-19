@@ -127,9 +127,6 @@ def test_dqn(args=get_args()):
     def test_fn(epoch, env_step):
         policy.set_eps(args.eps_test)
 
-    print(args.batch_size)
-    exit()
-
     # trainer
     result = offpolicy_trainer(
         policy,
