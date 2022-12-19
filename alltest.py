@@ -32,9 +32,9 @@ masterip = args.masterip
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # environments
-env = gym.make('MountainCarContinuous-v0')
-train_envs = DummyVectorEnv([lambda: gym.make('MountainCarContinuous-v0') for _ in range(20)])
-test_envs = DummyVectorEnv([lambda: gym.make('MountainCarContinuous-v0') for _ in range(10)])
+env = gym.make('Pendulum-v1')
+train_envs = DummyVectorEnv([lambda: gym.make('Pendulum-v1') for _ in range(20)])
+test_envs = DummyVectorEnv([lambda: gym.make('Pendulum-v1') for _ in range(10)])
 
 state_shape = env.observation_space.shape or env.observation_space.n
 action_shape = env.action_space.shape or env.action_space.n
