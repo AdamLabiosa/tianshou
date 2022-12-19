@@ -41,11 +41,12 @@ actor = Actor(net, env.action_space.n, device=device).to(device)
 critic = Critic(net, device=device).to(device)
 actor_critic = ActorCritic(actor, critic)
 optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
+dist_func = torch.distributions.Categorical
 
 
 dist = torch.distributions.Categorical
 # a2c policy
-policy = A2CPolicy(actor_critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
+policy = A2CPolicy(actor_critic, optim, dist_fn=dist_func, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank, masterip=masterip)
 # PPO
 # policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True, distr=DISTRIBUTED, num_nodes=4, rank=rank)
         
