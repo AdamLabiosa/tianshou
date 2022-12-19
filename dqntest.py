@@ -52,7 +52,7 @@ test_envs = ts.env.DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in rang
 state_shape = env.observation_space.shape or env.observation_space.n
 action_shape = env.action_space.shape or env.action_space.n
 # Creat branching network
-net = ts.network.BranchingDQNNet(state_shape, action_shape, 2, 2)
+net = ts.utils.net.common.BranchingNet(state_shape, action_shape, 128, 2)
 
 # net = Net(state_shape, action_shape)
 optim = torch.optim.Adam(net.parameters(), lr=1e-3)
