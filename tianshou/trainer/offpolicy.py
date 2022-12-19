@@ -90,7 +90,6 @@ class OffpolicyTrainer(BaseTrainer):
         **kwargs: Any,
     ):
         super().__init__(
-            test_num,
             learning_type="offpolicy",
             policy=policy,
             train_collector=train_collector,
