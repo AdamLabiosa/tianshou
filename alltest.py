@@ -8,9 +8,24 @@ from tianshou.policy import PPOPolicy
 from tianshou.trainer import onpolicy_trainer
 from tianshou.utils.net.common import ActorCritic, Net
 from tianshou.utils.net.discrete import Actor, Critic
+import argparse
 
 import warnings
 warnings.filterwarnings('ignore')
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--test-num', type=int)
+parser.add_argument('--dist', type=int)
+parser.add_argument('--num_nodes', type=int, default=4)
+parser.add_argument('--rank', type=int, default=0)
+parser.add_argument('--masterip', type=str, default='10.10.1.1')
+
+args = parser.parse_args()
+DISTRIBUTED = bool(args.dist)
+test_num = args.test_num
+num_nodes = args.num_nodes
+rank = args.rank
+masterip = args.masterip
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -28,7 +43,7 @@ optim = torch.optim.Adam(actor_critic.parameters(), lr=0.0003)
 
 # PPO policy
 dist = torch.distributions.Categorical
-policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=True)
+policy = PPOPolicy(actor, critic, optim, dist, action_space=env.action_space, deterministic_eval=DISTRIBUTED, distr=True, num_nodes=4, rank=rank)
         
           
 # collector
