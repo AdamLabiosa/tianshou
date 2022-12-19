@@ -44,6 +44,7 @@ def get_args():
     parser.add_argument('--logdir', type=str, default='log')
     parser.add_argument('--render', type=float, default=0.)
     parser.add_argument('--rank', type=int, default=0)
+    parser.add_argument('--dist', type=bool, default=False)
     parser.add_argument(
         '--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu'
     )
@@ -93,7 +94,7 @@ def test_dqn(args=get_args()):
         args.gamma,
         args.n_step,
         target_update_freq=args.target_update_freq,
-        dist=True,
+        dist=args.dist,
         num_nodes=4,
         rank=args.rank
     )
