@@ -94,7 +94,7 @@ def test_dqn(args=get_args()):
         args.gamma,
         args.n_step,
         target_update_freq=args.target_update_freq,
-        dist=args.dist,
+        distr=args.dist,
         num_nodes=4,
         rank=args.rank
     )
