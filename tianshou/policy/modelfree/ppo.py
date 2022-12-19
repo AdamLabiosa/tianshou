@@ -182,7 +182,7 @@ class PPOPolicy(A2CPolicy):
                 if self.distr:
                     # distribute.barrier()
                     # every 20 iterations, sync the gradients
-                    if sync % 20 == 0:
+                    if sync % 2000 == 0:
                         print('syncing gradients')
                         # sync gradients
                         for param in self._actor_critic.parameters():
