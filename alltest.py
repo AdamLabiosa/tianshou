@@ -32,9 +32,9 @@ masterip = args.masterip
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 # environments
-env = gym.make('CartPole-v0')
-train_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(20)])
-test_envs = DummyVectorEnv([lambda: gym.make('CartPole-v0') for _ in range(10)])
+env = gym.make('MountainCarContinuous-v0')
+train_envs = DummyVectorEnv([lambda: gym.make('MountainCarContinuous-v0') for _ in range(20)])
+test_envs = DummyVectorEnv([lambda: gym.make('MountainCarContinuous-v0') for _ in range(10)])
 
 # model & optimizer
 net = Net(env.observation_space.shape, hidden_sizes=[64, 64], device=device)
