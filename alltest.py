@@ -51,17 +51,25 @@ train_collector = Collector(policy, train_envs, VectorReplayBuffer(20000, len(tr
 test_collector = Collector(policy, test_envs)
 
 # trainer
-result = onpolicy_trainer(
-    policy,
-    train_collector,
-    test_collector,
-    test_num=0,
-    max_epoch=10,
-    step_per_epoch=50000,
-    repeat_per_collect=10,
-    episode_per_test=10,
-    batch_size=256,
-    step_per_collect=2000,
-    stop_fn=lambda mean_reward: mean_reward >= 195,
-)
+try:
+    result = onpolicy_trainer(
+        policy,
+        train_collector,
+        test_collector,
+        test_num=0,
+        max_epoch=10,
+        step_per_epoch=50000,
+        repeat_per_collect=10,
+        episode_per_test=10,
+        batch_size=256,
+        step_per_collect=2000,
+        stop_fn=lambda mean_reward: mean_reward >= 195,
+    )
+except Exception as e:
+    use_this = False
+    print(e)
+    print()
+    print("Another process has finished training, exiting...")
+    exit()
+
 print(result)
