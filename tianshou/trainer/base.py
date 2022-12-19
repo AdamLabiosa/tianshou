@@ -230,28 +230,28 @@ class BaseTrainer(ABC):
         self.num_nodes = num_nodes
         self.rank = rank
 
-        self.test_num = test_num
-        self.line_idx = 0
-        self.output_dir = f"./outputs"
-        os.makedirs(self.output_dir, exist_ok=True)
-        print(f"saving to self.output_dir={self.output_dir}")
+        # self.test_num = test_num
+        # self.line_idx = 0
+        # self.output_dir = f"./outputs"
+        # os.makedirs(self.output_dir, exist_ok=True)
+        # print(f"saving to self.output_dir={self.output_dir}")
 
-        if self.distributed:
-            ## INIT DIST ##
-            init_method = "tcp://{}:6677".format(self.master_ip)
-            print('initizaling distributed')
-            # dist.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
+        # if self.distributed:
+        #     ## INIT DIST ##
+        #     init_method = "tcp://{}:6677".format(self.master_ip)
+        #     print('initizaling distributed')
+        #     # dist.init_process_group(backend="gloo", init_method=init_method, world_size=self.num_nodes, rank=self.rank)
 
-            self.group_list = []
-            for group in range(0, self.num_nodes):
-                self.group_list.append(group)
+        #     self.group_list = []
+        #     for group in range(0, self.num_nodes):
+        #         self.group_list.append(group)
 
-            self.group = dist.new_group(self.group_list)
-            self.group_size = len(self.group_list)
-            ## END INIT ##
+        #     self.group = dist.new_group(self.group_list)
+        #     self.group_size = len(self.group_list)
+        #     ## END INIT ##
 
-        self.start_time = time.time()
-        self.file_export = None
+        # self.start_time = time.time()
+        # self.file_export = None
 
     def reset(self) -> None:
         """Initialize or reset the instance to yield a new iterator from zero."""
@@ -352,22 +352,22 @@ class BaseTrainer(ABC):
                 #     }
                 #     json.dump(out, file, indent=4)
 
-                # csv
-                if result["n/ep"] > 0:
-                    sec_elapsed = time.time()-self.start_time
-                    save_path = os.path.join(self.output_dir, f"{self.test_num}_{self.rank}_{self.epoch}_{self.iter_num}.csv")
-                    is_new = not os.path.exists(save_path)
-                    if self.file_export is None:
-                        self.file_export = open(save_path, "a+")
-                        print("file opened to export:", save_path)
-                    if is_new:
-                        self.file_export.write("index,sec_elapsed,n,mean,std\n")
-                    for k, v in result.items():
-                        if isinstance(v, np.ndarray):
-                            result[k] = v.tolist()
-                    lines = f"{self.line_idx},{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
-                    self.file_export.write(lines)
-                    self.line_idx += 1
+                # # csv
+                # if result["n/ep"] > 0:
+                #     sec_elapsed = time.time()-self.start_time
+                #     save_path = os.path.join(self.output_dir, f"{self.test_num}_{self.rank}_{self.epoch}_{self.iter_num}.csv")
+                #     is_new = not os.path.exists(save_path)
+                #     if self.file_export is None:
+                #         self.file_export = open(save_path, "a+")
+                #         print("file opened to export:", save_path)
+                #     if is_new:
+                #         self.file_export.write("index,sec_elapsed,n,mean,std\n")
+                #     for k, v in result.items():
+                #         if isinstance(v, np.ndarray):
+                #             result[k] = v.tolist()
+                #     lines = f"{self.line_idx},{sec_elapsed},{t.n},{result['rew']},{result['rew_std']}\n"
+                #     self.file_export.write(lines)
+                #     self.line_idx += 1
 
                 self.policy_update_fn(data, result)
                 t.set_postfix(**data)
